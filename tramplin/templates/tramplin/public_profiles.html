@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>{% if mentor_filter %}Менторы{% else %}Нетворкинг{% endif %} — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .profile-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+    .profile-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.3);border-color:rgba(37,99,235,0.3);}
+    .skill-tag{display:inline-flex;padding:.2rem .625rem;background:#EFF6FF;color:#2563EB;border-radius:20px;font-size:.75rem;font-weight:500;border:1px solid #BFDBFE;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+  </style>
+</head>
+<body class="antialiased">
+{% include "tramplin/_navbar.html" %}
+
+<!-- HERO -->
+<section class="pt-10 pb-10 md:pt-20 md:pb-16 px-4 md:px-6 relative overflow-hidden" style="background:linear-gradient(180deg,#EFF6FF 0%,transparent 100%);">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,#F8FAFC 0%,transparent 70%);transform:translate(30%,-30%);"></div>
+  <div class="max-w-screen-xl mx-auto relative">
+    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+      <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#2563EB;"></span><span class="relative inline-flex rounded-full h-2 w-2" style="background:#2563EB;"></span></span>
+      {{ seekers|length }} специалист{{ seekers|length|pluralize:",,ов" }} на платформе
+    </div>
+    <h1 class="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.06em] uppercase leading-tight mb-4" style="color:#1E293B;">
+      {% if mentor_filter %}Менторы<br/><span style="color:#2563EB;">платформы</span>{% else %}Нетворкинг<br/><span style="color:#2563EB;">в IT</span>{% endif %}
+    </h1>
+    <p class="text-sm md:text-base leading-relaxed mb-8 max-w-lg" style="color:#475569;">
+      {% if mentor_filter %}Верифицированные менторы, готовые помочь тебе вырасти в IT{% else %}Специалисты с публичными профилями — находи коллег, менторов и партнёров{% endif %}
+    </p>
+    <div class="flex flex-wrap gap-3">
+      <a href="{% url 'tramplin:public_profiles' %}"
+         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if not mentor_filter %}hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]{% else %}hover:border-[rgba(37,99,235,0.4)]{% endif %}"
+         style="{% if not mentor_filter %}background:#2563EB;color:#FFFFFF;{% else %}background:#FFFFFF;color:#1E293B;border:1px solid #CBD5E1;{% endif %}">
+        Все специалисты
+      </a>
+      <a href="{% url 'tramplin:public_profiles' %}?is_mentor=true"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if mentor_filter %}hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]{% else %}hover:border-[rgba(37,99,235,0.4)]{% endif %}"
+         style="{% if mentor_filter %}background:#2563EB;color:#FFFFFF;{% else %}background:#FFFFFF;color:#1E293B;border:1px solid #CBD5E1;{% endif %}">
+        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/>
+        </svg>
+        Только менторы
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- PROFILES GRID -->
+<section class="py-10 md:py-16 px-4 md:px-6">
+  <div class="max-w-screen-xl mx-auto">
+    {% if seekers %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {% for seeker in seekers %}
+      <div class="profile-card p-5">
+        <div class="flex items-center gap-3 mb-3">
+          {% if seeker.avatar %}<img src="{{ seeker.avatar.url }}" alt="{{ seeker.display_name|default:seeker.username }}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" style="border:1px solid #BFDBFE;">{% else %}<div class="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">{{ seeker.display_name|first|upper|default:"?" }}</div>{% endif %}
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <div class="font-medium text-sm truncate" style="color:#1E293B;">{{ seeker.display_name|default:seeker.username }}</div>
+              {% if seeker.is_mentor %}{% include "tramplin/_mentor_badge.html" %}{% endif %}
+              {% if seeker.is_mentor %}
+              <span title="{% if seeker.mentor_status == 'available' %}Доступен для менторства{% else %}Временно не принимает новые запросы{% endif %}">
+                <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;{% if seeker.mentor_status == 'available' %}background:#22C55E;box-shadow:0 0 0 2px rgba(34,197,94,.2);{% else %}background:#F59E0B;box-shadow:0 0 0 2px rgba(245,158,11,.2);{% endif %}"></span>
+              </span>
+              {% endif %}
+            </div>
+            {% if seeker.university %}<div class="text-xs truncate mt-0.5" style="color:#475569;">{{ seeker.university }}</div>{% endif %}
+            {% if seeker.is_mentor and seeker.last_message_sent_at %}
+            <div class="text-xs mt-0.5" style="color:#94A3B8;">
+              {% with age=seeker.last_message_sent_at|timesince %}{% if "минут" in age or "секунд" in age or "час" in age %}Отвечал(а) недавно{% else %}Был(а) в сети: {{ seeker.last_message_sent_at|date:"d M" }}{% endif %}{% endwith %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% if seeker.about %}<p class="text-xs leading-relaxed mb-3 line-clamp-2" style="color:#475569;">{{ seeker.about }}</p>{% endif %}
+        {% if seeker.skills_list %}
+        <div class="flex flex-wrap gap-1 mb-3">
+          {% for sk in seeker.skills_list|slice:":4" %}<span class="skill-tag">{{ sk }}</span>{% endfor %}
+          {% if seeker.skills_list|length > 4 %}<span class="text-xs self-center" style="color:#94A3B8;">+{{ seeker.skills_list|length|add:"-4" }}</span>{% endif %}
+        </div>
+        {% endif %}
+        <div class="flex gap-2 mt-2 pt-3" style="border-top:1px solid #E2E8F0;">
+          {% if seeker.pk in my_contact_ids %}
+          <form method="post" action="{% url 'tramplin:remove_contact' seeker.pk %}" class="flex-1">{% csrf_token %}
+            <button type="submit" class="w-full flex items-center justify-center gap-1.5 text-xs font-medium px-3 py-2 rounded-md transition-all" style="background:#E2E8F0;color:#475569;">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+              В контактах
+            </button>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'tramplin:add_contact' seeker.pk %}" class="flex-1">{% csrf_token %}
+            <button type="submit" class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-md transition-all hover:bg-[#1D4ED8] hover:shadow-[0_0_10px_rgba(37,99,235,0.3)]" style="background:#2563EB;color:#FFFFFF;">+ Добавить</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-24 rounded-xl" style="border:1px solid #E2E8F0;background:#F8FAFC;">
+      <div class="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5" style="background:#EFF6FF;border:1px solid #DBEAFE;">
+        {% if mentor_filter %}
+        <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m9 12 2 2 4-4"/></svg>
+        {% else %}
+        <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        {% endif %}
+      </div>
+      <h3 class="text-lg font-light tracking-wide uppercase mb-2" style="color:#1E293B;">{% if mentor_filter %}Менторов пока нет{% else %}Пока никого нет{% endif %}</h3>
+      <p class="text-sm max-w-sm mx-auto leading-relaxed mb-6" style="color:#94A3B8;">
+        {% if mentor_filter %}Пока нет доступных менторов, попробуйте позже{% else %}Включите публичный режим в настройках, чтобы другие могли найти вас{% endif %}
+      </p>
+      {% if mentor_filter %}
+      <a href="{% url 'tramplin:public_profiles' %}" class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" style="background:#2563EB;color:#FFFFFF;">Посмотреть всех специалистов</a>
+      {% else %}
+      <a href="{% url 'tramplin:seeker_dashboard' %}#settings" class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" style="background:#2563EB;color:#FFFFFF;">Настройки приватности</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% include "tramplin/_site_footer.html" %}
+</body>
+</html>

@@ -1,0 +1,17 @@
+{# _avatar.html — reusable avatar circle
+   Usage: {% include "tramplin/_avatar.html" with user_obj=some_user size="h-10 w-10" rounded="rounded-full" %}
+   Defaults: size="h-10 w-10", rounded="rounded-full"
+#}
+{% with sz=size|default:"h-10 w-10" rd=rounded|default:"rounded-full" %}
+{% if user_obj.avatar %}
+<img src="{{ user_obj.avatar.url }}"
+     alt="{{ user_obj.display_name|default:user_obj.username }}"
+     class="{{ sz }} {{ rd }} object-cover flex-shrink-0"
+     style="border:1.5px solid #E2E8F0;">
+{% else %}
+<div class="{{ sz }} {{ rd }} flex items-center justify-center font-bold flex-shrink-0"
+     style="background:#EFF6FF;border:1.5px solid #BFDBFE;color:#2563EB;font-size:inherit;">
+  {{ user_obj.display_name|first|upper|default:"?" }}
+</div>
+{% endif %}
+{% endwith %}

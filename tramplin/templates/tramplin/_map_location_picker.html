@@ -1,0 +1,241 @@
+{% load l10n %}
+{% comment %}
+  Интерактивный выбор точки на карте.
+  Параметры:
+    picker_prefix — префикс id полей (opp, sub, …)
+    init_lat, init_lng — начальный центр
+    has_marker — есть ли уже подтверждённая точка
+    location_input_id — id поля адреса (по умолчанию id_location)
+    postal_input_id — id поля индекса (по умолчанию id_postal_code)
+{% endcomment %}
+<div class="md:col-span-2 mt-2 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4" id="{{ picker_prefix }}_map_block">
+  {% localize off %}
+  <input type="hidden" name="latitude" id="{{ picker_prefix }}_lat" value="{% if has_marker %}{{ init_lat|stringformat:"f" }}{% endif %}"/>
+  <input type="hidden" name="longitude" id="{{ picker_prefix }}_lng" value="{% if has_marker %}{{ init_lng|stringformat:"f" }}{% endif %}"/>
+  {% endlocalize %}
+  <input type="hidden" name="location_confirmed" id="{{ picker_prefix }}_confirmed" value="{% if has_marker %}1{% else %}0{% endif %}"/>
+
+  <div class="flex items-start justify-between gap-3 mb-3 flex-wrap">
+    <div>
+      <p class="text-sm font-semibold text-[#1E293B]">Точка на карте</p>
+      <p class="text-xs text-[#64748B] mt-0.5">
+        <strong>Адрес:</strong> «Москва, Тверская улица, 7» или «Санкт-Петербург, Невский проспект, 28» → «Найти по адресу».
+        <strong>Индекс:</strong> 6 цифр → «Найти по индексу». Выдуманные улицы (например «ул. Примерная») не находятся — укажите реальный адрес или кликните на карте.
+      </p>
+    </div>
+    <span id="{{ picker_prefix }}_status" class="text-xs font-semibold px-2.5 py-1 rounded-full {% if has_marker %}bg-emerald-50 text-emerald-700 border border-emerald-200{% else %}bg-amber-50 text-amber-800 border border-amber-200{% endif %}">
+      {% if has_marker %}Точка подтверждена{% else %}Точка не выбрана{% endif %}
+    </span>
+  </div>
+
+  <div class="flex flex-wrap gap-2 mb-3">
+    <button type="button" onclick="MapPicker_{{ picker_prefix }}.geocodeAddress()"
+            class="px-3 py-1.5 text-xs font-medium rounded-lg bg-white text-[#475569] border border-[#E2E8F0] hover:bg-[#F1F5F9]">
+      Найти по адресу
+    </button>
+    <button type="button" onclick="MapPicker_{{ picker_prefix }}.geocodePostal()"
+            class="px-3 py-1.5 text-xs font-medium rounded-lg bg-white text-[#475569] border border-[#E2E8F0] hover:bg-[#F1F5F9]">
+      Найти по индексу
+    </button>
+    <button type="button" onclick="MapPicker_{{ picker_prefix }}.confirmPoint()"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8]">
+      Подтвердить точку
+    </button>
+    <button type="button" onclick="MapPicker_{{ picker_prefix }}.clearPoint()"
+            class="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100">
+      Сбросить
+    </button>
+    <span id="{{ picker_prefix }}_coords" class="text-xs text-[#94A3B8] self-center">
+      {% if has_marker %}{{ init_lat|floatformat:5 }}, {{ init_lng|floatformat:5 }}{% endif %}
+    </span>
+  </div>
+
+  <div id="{{ picker_prefix }}_map" style="height:280px;border-radius:10px;border:1px solid #E2E8F0;overflow:hidden;background:#E2E8F0;"></div>
+</div>
+
+<script>
+(function() {
+  const PREFIX = "{{ picker_prefix }}";
+  const LOC_ID = "{{ location_input_id|default:'id_location' }}";
+  const POSTAL_ID = "{{ postal_input_id|default:'id_postal_code' }}";
+  /* Числа только через строки — иначе ru-RU даёт 55,7558 и SyntaxError в JS */
+  const INIT_LAT = parseFloat("{% localize off %}{% if init_lat %}{{ init_lat|stringformat:"f" }}{% else %}55.7558{% endif %}{% endlocalize %}");
+  const INIT_LNG = parseFloat("{% localize off %}{% if init_lng %}{{ init_lng|stringformat:"f" }}{% else %}37.6173{% endif %}{% endlocalize %}");
+  const INIT_HAS_MARKER = {{ has_marker|yesno:"true,false" }};
+  const GEOCODE_URL = "{% url 'tramplin:geocode_search' %}";
+  let map = null, marker = null, draftLat = null, draftLng = null;
+  let mapReady = false;
+  let confirmed = INIT_HAS_MARKER;
+  let geocodeBusy = false;
+
+  function el(id) { return document.getElementById(id); }
+
+  function setStatus(ok, text) {
+    const s = el(PREFIX + "_status");
+    if (!s) return;
+    s.textContent = text;
+    s.className = "text-xs font-semibold px-2.5 py-1 rounded-full " + (
+      ok ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+         : "bg-amber-50 text-amber-800 border border-amber-200"
+    );
+  }
+
+  function updateFields(lat, lng, isConfirmed) {
+    el(PREFIX + "_lat").value = lat != null ? lat.toFixed(6) : "";
+    el(PREFIX + "_lng").value = lng != null ? lng.toFixed(6) : "";
+    el(PREFIX + "_confirmed").value = isConfirmed ? "1" : "0";
+    el(PREFIX + "_coords").textContent = (lat != null && lng != null)
+      ? lat.toFixed(5) + ", " + lng.toFixed(5) : "";
+    confirmed = isConfirmed;
+    setStatus(isConfirmed, isConfirmed ? "Точка подтверждена" : "Подтвердите точку на карте");
+  }
+
+  function placeMarker(lat, lng, isDraft) {
+    if (!map) return;
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    marker.on("dragend", function(e) {
+      const p = e.target.getLatLng();
+      draftLat = p.lat; draftLng = p.lng;
+      updateFields(p.lat, p.lng, false);
+    });
+    map.setView([lat, lng], 14);
+    draftLat = lat; draftLng = lng;
+    if (!isDraft) updateFields(lat, lng, true);
+    else updateFields(lat, lng, false);
+  }
+
+  function serverGeocode(q) {
+    return fetch(GEOCODE_URL + "?q=" + encodeURIComponent(q), {
+      headers: { "Accept": "application/json" },
+      credentials: "same-origin",
+    }).then(function(r) {
+      if (!r.ok) throw new Error("not_found");
+      return r.json();
+    });
+  }
+
+  function runGeocode(q, emptyMsg, failMsg) {
+    const picker = window["MapPicker_" + PREFIX];
+    if (geocodeBusy) return;
+    geocodeBusy = true;
+    picker.ensureInit();
+    setTimeout(function() {
+      if (!map) {
+        geocodeBusy = false;
+        alert("Карта ещё не готова. Прокрутите к блоку карты и повторите.");
+        return;
+      }
+      serverGeocode(q)
+        .then(function(data) {
+          const isCity = data.precision === "city";
+          placeMarker(data.lat, data.lng, isCity);
+          if (isCity) {
+            setStatus(false, "Найден город — перетащите маркер или кликните на карте");
+            alert("Найден центр города. Перетащите маркер к офису и нажмите «Подтвердить точку».");
+          }
+        })
+        .catch(function() { alert(failMsg); })
+        .finally(function() { geocodeBusy = false; });
+    }, 200);
+  }
+
+  function mapBlockVisible() {
+    const box = document.getElementById(PREFIX + "_map");
+    if (!box) return false;
+    let node = box;
+    while (node) {
+      if (node.classList && node.classList.contains("hidden")) return false;
+      node = node.parentElement;
+    }
+    return box.offsetWidth > 0 && box.offsetHeight > 0;
+  }
+
+  window["MapPicker_" + PREFIX] = {
+    ensureInit: function() {
+      if (typeof L === "undefined") {
+        console.warn("Leaflet (L) не загружен — проверьте leaflet.js и static.");
+        return;
+      }
+      const initLat = INIT_LAT;
+      const initLng = INIT_LNG;
+      const hasM = INIT_HAS_MARKER;
+      if (mapReady && map) {
+        setTimeout(function() { map.invalidateSize(true); }, 150);
+        return;
+      }
+      if (!mapBlockVisible()) return;
+      const mapEl = document.getElementById(PREFIX + "_map");
+      if (!mapEl) return;
+      map = L.map(mapEl, { scrollWheelZoom: true }).setView(
+        [initLat, initLng], hasM ? 14 : 10
+      );
+      if (window.TRAMPLIN_addTileLayer) TRAMPLIN_addTileLayer(map);
+      else console.warn("TRAMPLIN_addTileLayer не найден — проверьте leaflet-tiles.js");
+      map.on("click", function(e) {
+        placeMarker(e.latlng.lat, e.latlng.lng, true);
+      });
+      if (hasM) placeMarker(initLat, initLng, false);
+      mapReady = true;
+      setTimeout(function() { map.invalidateSize(true); }, 250);
+    },
+    init: function() {
+      this.ensureInit();
+    },
+    geocodeAddress: function() {
+      const loc = el(LOC_ID);
+      if (!loc || !loc.value.trim()) { alert("Введите адрес в поле «Город / Адрес»"); return; }
+      runGeocode(loc.value.trim(),
+        "Введите адрес",
+        "Адрес не найден. Уточните формулировку или поставьте точку кликом.");
+    },
+    geocodePostal: function() {
+      const pc = el(POSTAL_ID);
+      const loc = el(LOC_ID);
+      if (!pc || !pc.value.trim()) { alert("Введите почтовый индекс"); return; }
+      const index = pc.value.trim().replace(/\D/g, "");
+      if (index.length !== 6) {
+        alert("Укажите 6 цифр почтового индекса (например 628606).");
+        return;
+      }
+      const q = (loc && loc.value.trim())
+        ? index + ", " + loc.value.trim() + ", Россия"
+        : index;
+      runGeocode(q,
+        "Введите индекс",
+        "Индекс не найден. Добавьте город в поле адреса или уточните индекс.");
+    },
+    confirmPoint: function() {
+      if (draftLat == null || draftLng == null) {
+        alert("Сначала кликните на карту или найдите адрес / индекс.");
+        return;
+      }
+      updateFields(draftLat, draftLng, true);
+      setStatus(true, "Точка подтверждена");
+    },
+    clearPoint: function() {
+      if (marker && map) map.removeLayer(marker);
+      marker = null; draftLat = null; draftLng = null;
+      updateFields(null, null, false);
+      setStatus(false, "Точка не выбрана");
+    },
+  };
+
+  function boot() {
+    if (!document.getElementById(PREFIX + "_map")) return;
+    if (mapBlockVisible()) {
+      window["MapPicker_" + PREFIX].ensureInit();
+    }
+    document.addEventListener("tramplin:section", function() {
+      setTimeout(function() {
+        if (mapBlockVisible()) window["MapPicker_" + PREFIX].ensureInit();
+      }, 300);
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>

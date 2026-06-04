@@ -1,0 +1,4 @@
+Django>=5.1,<5.2
+requests>=2.31
+Pillow>=10.0
+mysqlclient>=2.2

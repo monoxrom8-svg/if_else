@@ -1,0 +1,292 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Вакансии в IT — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .vacancy-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+    .vacancy-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.4);border-color:rgba(37,99,235,0.3);}
+    .company-card{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;transition:transform .2s,box-shadow .2s;}
+    .company-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+    .feature-card{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;transition:transform .25s,box-shadow .25s;}
+    .feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.3);}
+    .fmt-remote{background:#ECFDF5;color:#059669;}
+    .fmt-hybrid{background:#FFFBEB;color:#D97706;}
+    .fmt-office{background:#EFF6FF;color:#2563EB;}
+    .search-bar{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:border-color .2s;}
+    .search-bar:focus-within{border-color:rgba(37,99,235,0.5);}
+    .stat-card{background:#F8FAFC;backdrop-filter:blur(12px);border:1px solid #E2E8F0;}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+    .float{animation:float 4s ease-in-out infinite;}
+    .float-delay{animation:float 4s ease-in-out 1.5s infinite;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+    .logo-scroll{overflow-x:auto;scrollbar-width:none;}
+    .logo-scroll::-webkit-scrollbar{display:none;}
+    select option{background:#FFFFFF;color:#1E293B;}
+  </style>
+</head>
+<body class="antialiased">
+{% include "tramplin/_navbar.html" %}
+
+<!-- HERO -->
+<section class="pt-10 pb-10 md:pt-20 md:pb-24 px-4 md:px-6 relative overflow-hidden" style="background:linear-gradient(180deg,#EFF6FF 0%,transparent 100%);">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,#F8FAFC 0%,transparent 70%);transform:translate(30%,-30%);"></div>
+  <div class="max-w-screen-xl mx-auto relative">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+          <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#2563EB;"></span><span class="relative inline-flex rounded-full h-2 w-2" style="background:#2563EB;"></span></span>
+          {{ total }} вакансий доступно прямо сейчас
+        </div>
+        <h1 class="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.06em] uppercase leading-tight mb-4 md:mb-5" style="color:#1E293B;">
+          Что такое<br/><span style="color:#2563EB;">вакансия на Трамплине?</span>
+        </h1>
+        <p class="text-sm md:text-base leading-relaxed md:leading-loose mb-6 md:mb-8 max-w-lg line-clamp-3 md:line-clamp-none" style="color:#475569;">
+          Вакансия — это постоянная позиция (Junior / Junior+) с официальной зарплатой, чёткими задачами и реальным карьерным ростом. Не стажировка — а твоя первая настоящая работа в IT.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="#vacancy-cards" class="flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all bg-[#2563EB] text-white hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:scale-[1.02] w-full sm:w-auto">
+            Смотреть вакансии
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <a href="{% url 'tramplin:companies' %}" class="hidden sm:inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-lg transition-all" style="border:1px solid #CBD5E1;color:#1E293B;">Компании-партнёры</a>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 lg:mt-0 hidden md:grid">
+        <div class="feature-card p-5 float sm:col-span-2">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+              <svg class="w-5 h-5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S1 18.523 1 13c0-.85.109-1.673.314-2.457L12 14z"/></svg>
+            </div>
+            <div>
+              <div class="text-xs font-semibold tracking-widest uppercase mb-1" style="color:#2563EB;">Для студентов</div>
+              <h3 class="font-medium text-sm mb-1.5" style="color:#1E293B;">Вакансия vs Стажировка</h3>
+              <p class="text-xs leading-relaxed" style="color:#475569;">Вакансия — это постоянная должность с трудовым договором, фиксированной зарплатой и ростом до Middle. Стажировка — временная программа для знакомства с компанией. Здесь ты уже <span class="font-semibold" style="color:#1E293B;">полноценный сотрудник</span>.</p>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card p-5 float">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+            <svg class="w-5 h-5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <h3 class="font-medium text-sm mb-1.5" style="color:#1E293B;">Карьерный рост</h3>
+          <p class="text-xs leading-relaxed" style="color:#475569;">Junior → Middle за 1–2 года при наличии ментора и чёткого плана развития.</p>
+        </div>
+        <div class="feature-card p-5 float-delay">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+            <svg class="w-5 h-5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3 class="font-medium text-sm mb-1.5" style="color:#1E293B;">Поддержка ментора</h3>
+          <p class="text-xs leading-relaxed" style="color:#475569;">Большинство Junior-позиций включают онбординг и наставника из команды.</p>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 md:mt-14">
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">0–1 год</div><div class="text-xs" style="color:#475569;">требуемый опыт</div></div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">100–200 тыс</div><div class="text-xs" style="color:#475569;">зарплата Junior</div></div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">Бессрочно</div><div class="text-xs" style="color:#475569;">трудовой договор</div></div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">{{ total }}+</div><div class="text-xs" style="color:#475569;">открытых позиций</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- EMPLOYER TIPS -->
+<section class="py-10 md:py-14 px-4 md:px-6" style="border-top:1px solid #E2E8F0;">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="rounded-xl p-6 md:p-10" style="background:#F1F5F9;border:1px solid #DBEAFE;">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold mb-4" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            Для работодателей
+          </div>
+          <h2 class="text-2xl font-light tracking-[0.1em] uppercase mb-3" style="color:#1E293B;">Как привлечь Gen Z?</h2>
+          <p class="text-sm leading-loose" style="color:#475569;">Молодые разработчики выбирают компанию так же тщательно, как компания выбирает их. Вот что важно указать в вакансии.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 lg:mt-0">
+          {% for tip in "123" %}
+          <div class="rounded-lg p-4" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+            <div class="w-8 h-8 rounded-md flex items-center justify-center mb-2 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+              {% if forloop.counter == 1 %}<svg class="w-4 h-4" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              {% elif forloop.counter == 2 %}<svg class="w-4 h-4" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              {% else %}<svg class="w-4 h-4" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{% endif %}
+            </div>
+            <div class="text-xs font-semibold mb-1" style="color:#1E293B;">{% if forloop.counter == 1 %}Чёткий стек{% elif forloop.counter == 2 %}Культура роста{% else %}Поддержка ментора{% endif %}</div>
+            <p class="text-xs leading-relaxed" style="color:#475569;">{% if forloop.counter == 1 %}Укажите конкретные технологии: Python 3.12, FastAPI, PostgreSQL — без расплывчатых «и другие».{% elif forloop.counter == 2 %}Опишите онбординг, ревью кода, внутренние митапы и план развития на первый год.{% else %}Укажите, будет ли у Junior наставник. Это один из главных факторов выбора для новичков.{% endif %}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if featured_companies %}
+<section class="py-10 md:py-16 px-4 md:px-6" style="border-top:1px solid #E2E8F0;">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="flex items-end justify-between mb-6 md:mb-8 gap-4">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-2" style="color:#2563EB;">Топ работодатели</p>
+        <h2 class="text-2xl font-light tracking-[0.1em] uppercase" style="color:#1E293B;">Компании, нанимающие Junior</h2>
+        <p class="text-sm mt-1 leading-relaxed" style="color:#475569;">Общая информация о культуре найма в ведущих IT-компаниях</p>
+      </div>
+      <a href="{% url 'tramplin:companies' %}" class="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70" style="color:#2563EB;white-space:nowrap;">
+        Все компании <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+    <div class="logo-scroll">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for fc in featured_companies %}
+        <a href="{% url 'tramplin:company_profile' fc.employer__id %}" class="company-card p-5 flex items-start gap-4 group">
+          <div class="w-11 h-11 rounded-lg flex items-center justify-center font-bold text-lg flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#DBEAFE;border:1px solid #BFDBFE;color:#2563EB;">{{ fc.employer__company_name|first|upper }}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-sm truncate transition-colors group-hover:text-[#2563EB]" style="color:#1E293B;">{{ fc.employer__company_name|default:"Компания" }}</div>
+            {% if fc.employer__company_industry %}<div class="text-xs mt-0.5" style="color:#94A3B8;">{{ fc.employer__company_industry }}</div>{% endif %}
+            {% if fc.employer__company_description %}<p class="text-xs mt-1.5 line-clamp-2 leading-relaxed" style="color:#94A3B8;">{{ fc.employer__company_description|truncatechars:80 }}</p>{% endif %}
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">{{ fc.count }} вакансий</span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- VACANCY CARDS -->
+<section id="vacancy-cards" class="py-10 md:py-16 px-4 md:px-6">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-2" style="color:#2563EB;">Открытые позиции</p>
+        <h2 class="text-2xl font-light tracking-[0.1em] uppercase" style="color:#1E293B;">Актуальные вакансии</h2>
+        <p class="text-sm mt-1" style="color:#475569;">{% if total %}Найдено <span class="font-semibold" style="color:#2563EB;" id="resultCount">{{ total }}</span> вакансий{% else %}Вакансии появятся здесь после прохождения модерации{% endif %}</p>
+      </div>
+      <div class="search-bar flex flex-col sm:flex-row gap-2 p-2 w-full md:w-auto md:min-w-[480px]">
+        <div class="flex items-center gap-2 flex-1 px-3 py-2">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="searchInput" type="text" placeholder="Должность, навык или компания..." class="w-full text-sm outline-none bg-transparent font-medium" style="color:#1E293B;"/>
+        </div>
+        <div class="relative flex-shrink-0">
+          <select id="filterFormat" class="appearance-none bg-transparent px-3 py-2 text-sm font-medium outline-none cursor-pointer pr-7 w-full" style="color:#475569;">
+            <option value="">Любой формат</option><option value="remote">Удалённо</option><option value="hybrid">Гибрид</option><option value="office">Офис</option>
+          </select>
+          <svg class="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <button onclick="filterCards()" class="text-sm font-semibold px-5 py-2 rounded-lg transition-all flex-shrink-0 hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" class="bg-[#2563EB] text-white">Найти</button>
+      </div>
+    </div>
+
+    {% if vacancies %}
+    <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for opp in vacancies %}
+      <article class="vacancy-card p-6 flex flex-col" data-title="{{ opp.title|lower }}" data-skills="{{ opp.skills_required|lower }}" data-format="{{ opp.format }}" data-company="{{ opp.employer.company_name|lower }}">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-lg flex items-center justify-center font-bold text-base flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#DBEAFE;border:1px solid #BFDBFE;color:#2563EB;">{{ opp.employer.company_name|first|upper|default:"?" }}</div>
+            <div>
+              <a href="{% url 'tramplin:opportunity_detail' opp.pk %}" class="font-medium text-sm leading-tight hover:text-[#2563EB] transition-colors" style="color:#1E293B;">{{ opp.title }}</a>
+              <p class="text-xs mt-0.5" style="color:#475569;">{{ opp.employer.company_name|default:opp.employer.display_name }}</p>
+            </div>
+          </div>
+          <span class="text-xs font-medium px-2.5 py-1 rounded-md flex-shrink-0 {% if opp.format == 'remote' %}fmt-remote{% elif opp.format == 'hybrid' %}fmt-hybrid{% else %}fmt-office{% endif %}">{{ opp.format_label }}</span>
+        </div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full" style="background:#E2E8F0;color:#475569;">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Опыт: 0–1 год
+          </span>
+          <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">Junior</span>
+        </div>
+        <p class="text-xs leading-relaxed mb-4 line-clamp-2 flex-1" style="color:#475569;">{{ opp.requirements|default:opp.description|truncatechars:120 }}</p>
+        {% if opp.skills_list %}
+        <div class="flex flex-wrap gap-1.5 mb-4">
+          {% for skill in opp.skills_list|slice:":4" %}<span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">{{ skill }}</span>{% endfor %}
+          {% if opp.skills_list|length > 4 %}<span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#E2E8F0;color:#94A3B8;">+{{ opp.skills_list|length|add:"-4" }}</span>{% endif %}
+        </div>
+        {% endif %}
+        {% if opp.salary %}<div class="text-sm font-semibold mb-4" style="color:#2563EB;">{{ opp.salary }}</div>{% endif %}
+        <div class="flex items-center justify-between pt-3 mt-auto gap-2" style="border-top:1px solid #E2E8F0;">
+          {% if opp.location %}<span class="hidden md:flex text-xs items-center gap-1 truncate" style="color:#94A3B8;"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ opp.location|truncatechars:18 }}</span>{% else %}<span></span>{% endif %}
+          <div class="flex items-center gap-2 flex-shrink-0 w-full md:w-auto">
+            <a href="{% url 'tramplin:opportunity_detail' opp.pk %}" class="inline-flex items-center justify-center text-xs font-medium px-3 py-2 rounded-md transition-all" style="background:#F8FAFC;color:#475569;border:1px solid #E2E8F0;">Подробнее</a>
+            {% if not user.is_authenticated %}
+              <a href="{% url 'tramplin:login' %}" class="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 text-xs font-medium px-3 py-2 rounded-md transition-all" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">Войти и откликнуться</a>
+            {% elif user.role == 'seeker' %}
+              {% if opp.pk in applied_ids %}
+                <span class="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 text-xs font-medium px-3 py-2 rounded-md cursor-not-allowed" style="background:#E2E8F0;color:#475569;">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>Вы уже откликнулись
+                </span>
+              {% else %}
+                <button onclick="openApplyModal({{ opp.pk }}, '{{ opp.title|escapejs }}')"
+                        class="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-md transition-all hover:bg-[#1D4ED8] hover:shadow-[0_0_10px_rgba(37,99,235,0.3)]"
+                        style="background:#2563EB;color:#FFFFFF;">
+                  Откликнуться
+                </button>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div id="noResults" class="hidden text-center py-20">
+      <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="#CBD5E1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <p class="font-medium" style="color:#94A3B8;">Ничего не найдено</p>
+      <p class="text-sm mt-1" style="color:#94A3B8;">Попробуйте изменить запрос или сбросить фильтры</p>
+      <button onclick="resetFilters()" class="mt-4 text-sm font-medium transition-opacity hover:opacity-70" style="color:#2563EB;">Сбросить фильтры</button>
+    </div>
+    {% else %}
+    <div class="text-center py-24 rounded-xl" style="border:1px solid #E2E8F0;background:#F8FAFC;">
+      <div class="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5" style="background:#EFF6FF;border:1px solid #DBEAFE;">
+        <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <h3 class="text-xl font-light tracking-wide uppercase mb-2" style="color:#1E293B;">Вакансии скоро появятся</h3>
+      <p class="text-sm max-w-sm mx-auto leading-relaxed" style="color:#94A3B8;">Работодатели публикуют вакансии, которые проходят модерацию перед публикацией. Загляните позже.</p>
+      <a href="{% url 'tramplin:companies' %}" class="inline-flex items-center gap-2 mt-6 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" class="bg-[#2563EB] text-white">Посмотреть компании</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% include "tramplin/_site_footer.html" %}
+
+<script>
+  const cards = document.querySelectorAll('#cardsGrid article');
+  const noResults = document.getElementById('noResults');
+  const resultCount = document.getElementById('resultCount');
+  function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    const fmt = document.getElementById('filterFormat').value;
+    let visible = 0;
+    cards.forEach(card => {
+      const matchText = !q || card.dataset.title.includes(q) || card.dataset.skills.includes(q) || card.dataset.company.includes(q);
+      const matchFmt = !fmt || card.dataset.format === fmt;
+      if (matchText && matchFmt) { card.style.display = ''; visible++; } else { card.style.display = 'none'; }
+    });
+    if (noResults) noResults.classList.toggle('hidden', visible > 0);
+    if (resultCount) resultCount.textContent = visible;
+  }
+  function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('filterFormat').value = '';
+    filterCards();
+  }
+  document.getElementById('searchInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') filterCards(); });
+</script>
+
+{% include "tramplin/_apply_modal.html" %}
+<script>lucide.createIcons();</script>
+</body>
+</html>

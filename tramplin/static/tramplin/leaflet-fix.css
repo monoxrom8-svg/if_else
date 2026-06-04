@@ -1,0 +1,11 @@
+/* Tailwind сбрасывает img { max-width:100% } — без этого тайлы Leaflet не видны */
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
+  z-index: 0;
+}

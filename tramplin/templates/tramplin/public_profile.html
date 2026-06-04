@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>{{ profile_user.display_name|default:profile_user.username }} — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .skill-tag{display:inline-flex;padding:.3rem .85rem;background:#EFF6FF;color:#2563EB;border-radius:999px;font-size:.8125rem;font-weight:500;border:1px solid #BFDBFE;}
+    .section-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:1.5rem;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+  </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+{% include "tramplin/_navbar.html" %}
+
+<main class="flex-1">
+<div class="max-w-2xl mx-auto px-4 py-10">
+
+  {% if is_closed %}
+  <!-- ── PRIVATE PROFILE ── -->
+  <div class="flex flex-col items-center justify-center min-h-[60vh]">
+    <div class="section-card text-center max-w-sm w-full p-10">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:#F1F5F9;border:1px solid #E2E8F0;">
+        <svg class="w-8 h-8" fill="none" stroke="#64748B" stroke-width="1.75" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <!-- Avatar -->
+      <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center mx-auto mb-3" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+        {% if profile_user.avatar %}
+        <img src="{{ profile_user.avatar.url }}" alt="" class="w-16 h-16 object-cover">
+        {% else %}
+        <span class="font-bold text-2xl" style="color:#2563EB;">{{ profile_user.display_name|first|upper|default:"?" }}</span>
+        {% endif %}
+      </div>
+      <h2 class="text-lg font-semibold mb-1" style="color:#1E293B;">{{ profile_user.display_name|default:profile_user.username }}</h2>
+      {% if profile_user.is_mentor %}
+      <div class="flex justify-center mb-3">{% include "tramplin/_mentor_badge.html" %}</div>
+      {% endif %}
+      <p class="text-sm leading-relaxed mb-6" style="color:#64748B;">Профиль скрыт настройками приватности</p>
+      {% if user.is_authenticated and user != profile_user %}
+        {% include "tramplin/_contact_buttons.html" %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% else %}
+  <!-- ── PUBLIC PROFILE ── -->
+
+  <!-- Hero card -->
+  <div class="section-card mb-4" style="background:linear-gradient(135deg,#EFF6FF 0%,#FFFFFF 60%);">
+
+    <!-- Top row: avatar + name block -->
+    <div class="flex items-start gap-5 mb-5">
+      <!-- Avatar -->
+      <div class="flex-shrink-0">
+        {% if profile_user.avatar %}
+        <img src="{{ profile_user.avatar.url }}"
+             alt="{{ profile_user.display_name|default:profile_user.username }}"
+             class="w-24 h-24 rounded-2xl object-cover"
+             style="border:2px solid #BFDBFE;box-shadow:0 4px 20px rgba(37,99,235,0.13);">
+        {% else %}
+        <div class="w-24 h-24 rounded-2xl flex items-center justify-center font-bold text-4xl"
+             style="background:#EFF6FF;border:2px solid #BFDBFE;color:#2563EB;box-shadow:0 4px 20px rgba(37,99,235,0.13);">
+          {{ profile_user.display_name|first|upper|default:"?" }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Name + badges -->
+      <div class="flex-1 min-w-0 pt-1">
+        <h1 class="text-2xl font-bold leading-tight mb-2" style="color:#1E293B;">
+          {{ profile_user.display_name|default:profile_user.username }}
+        </h1>
+
+        <!-- Badges row -->
+        <div class="flex flex-wrap items-center gap-2">
+          {% if profile_user.is_mentor %}
+            {% include "tramplin/_mentor_badge.html" %}
+          {% endif %}
+
+          {% if profile_user.role == 'employer' %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">
+              Работодатель{% if profile_user.is_verified_employer %} <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{% endif %}
+            </span>
+          {% elif profile_user.is_profile_public %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style="background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+              Открыт к нетворкингу
+            </span>
+          {% endif %}
+
+          {% if profile_user.is_mentor %}
+            {% if profile_user.mentor_status == 'available' %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style="background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0;display:inline-block;"></span>
+              Доступен для менторства
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#F59E0B;flex-shrink:0;display:inline-block;"></span>
+              Временно занят
+            </span>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- Subtitle: university / last seen -->
+        {% if profile_user.role != 'employer' %}
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+          {% if profile_user.university %}
+          <span class="text-sm" style="color:#475569;">
+            <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S1 18.523 1 13c0-.85.109-1.673.314-2.457L12 14z"/></svg>
+            {{ profile_user.university }}{% if profile_user.graduation_year %} · {{ profile_user.graduation_year }}{% endif %}
+          </span>
+          {% endif %}
+          {% if profile_user.is_mentor and profile_user.last_message_sent_at %}
+          <span class="text-xs" style="color:#94A3B8;">
+            {% with age=profile_user.last_message_sent_at|timesince %}{% if "минут" in age or "секунд" in age or "час" in age %}Отвечал(а) недавно{% else %}Был(а) в сети {{ profile_user.last_message_sent_at|date:"d M Y" }}{% endif %}{% endwith %}
+          </span>
+          {% endif %}
+        </div>
+        {% else %}
+        {% if profile_user.company_name %}
+        <p class="text-sm mt-2 font-medium" style="color:#1E293B;">{{ profile_user.company_name }}</p>
+        {% endif %}
+        {% if profile_user.company_industry %}
+        <p class="text-sm mt-0.5" style="color:#475569;">{{ profile_user.company_industry }}</p>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- About (short) -->
+    {% if profile_user.role != 'employer' and profile_user.about %}
+    <p class="text-sm leading-relaxed mb-5" style="color:#475569;">{{ profile_user.about }}</p>
+    {% endif %}
+    {% if profile_user.role == 'employer' and profile_user.company_description %}
+    <p class="text-sm leading-relaxed mb-5" style="color:#475569;">{{ profile_user.company_description|truncatechars:200 }}</p>
+    {% endif %}
+
+    <!-- Links row -->
+    {% if profile_user.role != 'employer' %}
+    {% if profile_user.github_url or profile_user.portfolio_url %}
+    <div class="flex flex-wrap gap-2 mb-5">
+      {% if profile_user.github_url %}
+      <a href="{{ profile_user.github_url }}" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+         style="background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+        GitHub
+      </a>
+      {% endif %}
+      {% if profile_user.portfolio_url %}
+      <a href="{{ profile_user.portfolio_url }}" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+         style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Портфолио
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    {% if profile_user.company_website %}
+    <div class="flex flex-wrap gap-2 mb-5">
+      <a href="{{ profile_user.company_website }}" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg"
+         style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Сайт компании
+      </a>
+      <a href="{% url 'tramplin:company_profile' profile_user.pk %}"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg"
+         style="background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;">
+        Страница компании →
+      </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Action buttons (divider + buttons) -->
+    {% if user.is_authenticated and user != profile_user %}
+    <div class="pt-4 border-t border-[#E2E8F0]">
+      {% include "tramplin/_contact_buttons.html" %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Seeker-only detail sections ── -->
+  {% if profile_user.role != 'employer' %}
+
+    {% if profile_user.skills_list %}
+    <div class="section-card mb-4">
+      <h2 class="text-xs font-semibold tracking-widest uppercase mb-4" style="color:#94A3B8;">Навыки</h2>
+      <div class="flex flex-wrap gap-2">
+        {% for sk in profile_user.skills_list %}<span class="skill-tag">{{ sk }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if profile_user.university %}
+    <div class="section-card mb-4">
+      <h2 class="text-xs font-semibold tracking-widest uppercase mb-4" style="color:#94A3B8;">Образование</h2>
+      <div class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+          <svg class="w-5 h-5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S1 18.523 1 13c0-.85.109-1.673.314-2.457L12 14z"/></svg>
+        </div>
+        <div>
+          <p class="font-semibold text-sm" style="color:#1E293B;">{{ profile_user.university }}</p>
+          {% if profile_user.graduation_year %}<p class="text-xs mt-0.5" style="color:#64748B;">{{ profile_user.graduation_year }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if profile_user.about %}
+    <div class="section-card mb-4">
+      <h2 class="text-xs font-semibold tracking-widest uppercase mb-4" style="color:#94A3B8;">О себе</h2>
+      <p class="text-sm leading-relaxed whitespace-pre-line" style="color:#475569;">{{ profile_user.about }}</p>
+    </div>
+    {% endif %}
+
+    {% if not profile_user.skills_list and not profile_user.university and not profile_user.about %}
+    <div class="rounded-2xl p-10 text-center" style="border:1px dashed #CBD5E1;">
+      <p class="text-sm" style="color:#94A3B8;">Пользователь ещё не заполнил профиль</p>
+    </div>
+    {% endif %}
+
+  {% endif %}
+
+  {% endif %}{# end is_closed #}
+
+</div>
+</main>
+
+<script>
+  window.TRAMPLIN_CHAT_TARGET = {
+    id: {{ profile_user.pk }},
+    name: "{{ profile_user.display_name|default:profile_user.username|escapejs }}",
+    initial: "{{ profile_user.display_name|first|upper|default:'?' }}",
+    isMentor: {% if profile_user.is_mentor %}true{% else %}false{% endif %},
+    skills: "{{ profile_user.skills|escapejs }}",
+    avatarUrl: "{{ profile_user.avatar_url|escapejs }}",
+  };
+</script>
+
+{% include "tramplin/_site_footer.html" %}
+</body>
+</html>

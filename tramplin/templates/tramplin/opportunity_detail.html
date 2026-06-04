@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>{{ opp.title }} — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .fmt-remote{background:#ECFDF5;color:#059669;}
+    .fmt-hybrid{background:#FFFBEB;color:#D97706;}
+    .fmt-office{background:#EFF6FF;color:#2563EB;}
+    .badge-vacancy{background:#EFF6FF;color:#2563EB;}
+    .badge-internship{background:#ECFDF5;color:#059669;}
+    .badge-mentorship{background:#F5F3FF;color:#7C3AED;}
+    .badge-event{background:#FFFBEB;color:#D97706;}
+  </style>
+</head>
+<body class="antialiased">
+{% include "tramplin/_navbar.html" %}
+
+<main class="max-w-screen-lg mx-auto px-4 md:px-6 py-8 md:py-12">
+  <a href="{% url back_url_name %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#2563EB] transition-colors mb-6">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    Назад к списку
+  </a>
+
+  <div class="rounded-2xl border border-[#E2E8F0] bg-white p-6 md:p-8 shadow-sm mb-8">
+    <div class="flex flex-col md:flex-row md:items-start gap-5 md:gap-6">
+      <div class="w-14 h-14 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0 bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB]">
+        {{ employer.company_name|first|upper|default:"?" }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap gap-2 mb-3">
+          <span class="text-xs font-medium px-2.5 py-1 rounded-md badge-{{ opp.type }}">{{ opp.type_label }}</span>
+          <span class="text-xs font-medium px-2.5 py-1 rounded-md {% if opp.format == 'remote' %}fmt-remote{% elif opp.format == 'hybrid' %}fmt-hybrid{% else %}fmt-office{% endif %}">{{ opp.format_label }}</span>
+          {% if opp.status == 'closed' %}
+          <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-[#F1F5F9] text-[#94A3B8]">Закрыта</span>
+          {% endif %}
+        </div>
+        <h1 class="text-xl md:text-2xl font-semibold text-[#1E293B] leading-tight mb-2">{{ opp.title }}</h1>
+        <a href="{% url 'tramplin:company_profile' employer.pk %}" class="text-sm font-medium text-[#2563EB] hover:underline">
+          {{ employer.company_name|default:employer.display_name }}
+        </a>
+        {% if opp.salary %}
+        <p class="text-lg font-semibold text-[#2563EB] mt-3">{{ opp.salary }}</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-4 mt-3 text-xs text-[#94A3B8]">
+          {% if opp.location %}
+          <span class="inline-flex items-center gap-1">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>{{ opp.location }}
+          </span>
+          {% endif %}
+          {% if opp.created_at %}
+          <span>Опубликовано {{ opp.created_at|date:"d E Y" }}</span>
+          {% endif %}
+          {% if opp.expires_at %}
+          <span>До {{ opp.expires_at|date:"d E Y" }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 w-full md:w-auto flex-shrink-0">
+        {% if user.is_authenticated and user.role == 'seeker' %}
+          {% if applied %}
+          <span class="inline-flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-lg bg-[#E2E8F0] text-[#475569]">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>Вы уже откликнулись
+          </span>
+          {% else %}
+          <button type="button" onclick="openApplyModal({{ opp.pk }}, '{{ opp.title|escapejs }}')"
+                  class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm">
+            <i data-lucide="send" class="w-4 h-4"></i>Откликнуться
+          </button>
+          {% endif %}
+          <button type="button" id="favBtn" onclick="toggleDetailFavorite({{ opp.pk }})"
+                  class="inline-flex items-center justify-center gap-2 text-sm font-medium px-5 py-2.5 rounded-lg border border-[#E2E8F0] text-[#475569] hover:border-[#BFDBFE] hover:bg-[#F8FAFC]">
+            <i data-lucide="star" class="w-4 h-4" id="favIcon"></i>
+            <span id="favLabel">{% if is_favorite %}В избранном{% else %}В избранное{% endif %}</span>
+          </button>
+        {% elif not user.is_authenticated %}
+          <a href="{% url 'tramplin:login' %}?next={{ request.path }}"
+             class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8]">
+            Войти и откликнуться
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+      <section class="rounded-xl border border-[#E2E8F0] bg-white p-6">
+        <h2 class="text-xs font-semibold tracking-widest uppercase text-[#94A3B8] mb-3">Описание</h2>
+        <p class="text-sm leading-relaxed text-[#475569] whitespace-pre-line">{{ opp.description }}</p>
+      </section>
+      {% if opp.requirements %}
+      <section class="rounded-xl border border-[#E2E8F0] bg-white p-6">
+        <h2 class="text-xs font-semibold tracking-widest uppercase text-[#94A3B8] mb-3">Требования</h2>
+        <p class="text-sm leading-relaxed text-[#475569] whitespace-pre-line">{{ opp.requirements }}</p>
+      </section>
+      {% endif %}
+      {% if opp.skills_list %}
+      <section class="rounded-xl border border-[#E2E8F0] bg-white p-6">
+        <h2 class="text-xs font-semibold tracking-widest uppercase text-[#94A3B8] mb-3">Навыки</h2>
+        <div class="flex flex-wrap gap-2">
+          {% for skill in opp.skills_list %}
+          <span class="text-xs px-3 py-1.5 rounded-full font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </div>
+
+    <aside class="space-y-4">
+      <div class="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-5">
+        <h2 class="text-xs font-semibold tracking-widest uppercase text-[#94A3B8] mb-3">Работодатель</h2>
+        <p class="font-semibold text-[#1E293B] text-sm mb-1">{{ employer.company_name|default:employer.display_name }}</p>
+        {% if employer.company_industry %}<p class="text-xs text-[#475569] mb-3">{{ employer.company_industry }}</p>{% endif %}
+        <a href="{% url 'tramplin:company_profile' employer.pk %}" class="text-sm font-medium text-[#2563EB] hover:underline">Страница компании →</a>
+      </div>
+      {% if similar %}
+      <div class="rounded-xl border border-[#E2E8F0] bg-white p-5">
+        <h2 class="text-xs font-semibold tracking-widest uppercase text-[#94A3B8] mb-3">Похожие</h2>
+        <ul class="space-y-3">
+          {% for s in similar %}
+          <li>
+            <a href="{% url 'tramplin:opportunity_detail' s.pk %}" class="block group">
+              <div class="font-medium text-sm text-[#1E293B] group-hover:text-[#2563EB] transition-colors">{{ s.title }}</div>
+              <div class="text-xs text-[#94A3B8]">{{ s.employer.company_name|default:s.employer.display_name }}</div>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</main>
+
+{% include "tramplin/_apply_modal.html" %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+    updateFavIcon({% if is_favorite %}true{% else %}false{% endif %});
+  });
+
+  function updateFavIcon(active) {
+    const icon = document.getElementById('favIcon');
+    const label = document.getElementById('favLabel');
+    if (!icon || !label) return;
+    if (active) {
+      icon.style.fill = '#D97706';
+      icon.style.stroke = '#D97706';
+      label.textContent = 'В избранном';
+    } else {
+      icon.style.fill = 'none';
+      icon.style.stroke = 'currentColor';
+      label.textContent = 'В избранное';
+    }
+  }
+
+  function toggleDetailFavorite(oppId) {
+    fetch("{% url 'tramplin:toggle_favorite' %}", {
+      method: 'POST',
+      headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'opp_id=' + oppId
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.added !== undefined) updateFavIcon(data.added);
+    });
+  }
+</script>
+</body>
+</html>

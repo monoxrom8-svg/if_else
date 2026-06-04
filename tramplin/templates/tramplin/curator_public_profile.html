@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>{{ curator_user.display_name|default:curator_user.username }} — Куратор · Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .section-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:1.5rem;}
+    .stat-card{background:#F8FAFC;border:1px solid #E2E8F0;}
+    .mentor-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:border-color .15s,box-shadow .15s;text-decoration:none;}
+    .mentor-pill:hover{border-color:rgba(37,99,235,0.3);box-shadow:0 2px 10px rgba(37,99,235,0.08);}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+  </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+{% include "tramplin/_navbar.html" %}
+
+<main class="flex-1">
+<!-- HERO -->
+<section class="pt-10 pb-10 md:pt-20 md:pb-16 px-4 md:px-6 relative overflow-hidden" style="background:linear-gradient(180deg,#EFF6FF 0%,transparent 100%);">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,#F8FAFC 0%,transparent 70%);transform:translate(30%,-30%);"></div>
+  <div class="max-w-3xl mx-auto relative">
+    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.25" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+      </svg>
+      Официальный куратор платформы
+    </div>
+    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      <div class="flex-shrink-0">
+        {% if curator_user.avatar %}
+          <img src="{{ curator_user.avatar.url }}" alt="{{ curator_user.display_name|default:curator_user.username }}"
+               class="w-24 h-24 rounded-2xl object-cover drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]"
+               style="border:2px solid #BFDBFE;">
+        {% else %}
+          <div class="w-24 h-24 rounded-2xl flex items-center justify-center font-bold text-4xl drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]"
+               style="background:#EFF6FF;border:2px solid #BFDBFE;color:#2563EB;">
+            {{ curator_user.display_name|first|upper|default:"К" }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="flex-1 min-w-0 text-center sm:text-left">
+        <h1 class="text-2xl md:text-4xl font-light tracking-[0.06em] uppercase leading-tight mb-3" style="color:#1E293B;">
+          {{ curator_user.display_name|default:curator_user.username }}
+        </h1>
+        {% if curator_profile.responsibility_area %}
+        <p class="text-sm leading-relaxed mb-4" style="color:#475569;">
+          <svg class="inline-block w-4 h-4 mr-1 -mt-0.5" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          Ответственный за: <span class="font-medium" style="color:#1E293B;">{{ curator_profile.responsibility_area }}</span>
+        </p>
+        {% endif %}
+        {% if user.is_authenticated and user != curator_user %}
+        <button onclick="CW && CW.openWith({{ curator_user.pk }}, '{{ curator_user.display_name|default:curator_user.username|escapejs }}', '{{ curator_user.display_name|first|upper|default:'К' }}', {{ curator_user.is_mentor|yesno:'true,false' }}, '{{ curator_user.avatar_url|escapejs }}');"
+                class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:scale-[1.02]"
+                style="background:#2563EB;color:#FFFFFF;">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Написать куратору
+        </button>
+        {% else %}
+        <a href="{% url 'tramplin:login' %}" class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" style="background:#2563EB;color:#FFFFFF;">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Войти, чтобы написать
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-10">
+      <div class="stat-card rounded-xl px-5 py-4 text-center">
+        <div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">{{ curator_profile.approved_mentors_count }}</div>
+        <div class="text-xs" style="color:#475569;">одобрено менторов</div>
+      </div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center">
+        <div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">
+          {% if curator_profile.availability_schedule %}{{ curator_profile.availability_schedule|truncatechars:12 }}{% else %}—{% endif %}
+        </div>
+        <div class="text-xs" style="color:#475569;">график работы</div>
+      </div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center col-span-2 md:col-span-1">
+        <div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">Куратор</div>
+        <div class="text-xs" style="color:#475569;">верифицированный статус</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if approved_mentors %}
+<section class="py-10 md:py-16 px-4 md:px-6" style="border-top:1px solid #E2E8F0;">
+  <div class="max-w-3xl mx-auto">
+    <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-2" style="color:#2563EB;">Верифицированные специалисты</p>
+    <h2 class="text-2xl font-light tracking-[0.1em] uppercase mb-6" style="color:#1E293B;">Менторы под руководством куратора</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {% for mentor in approved_mentors %}
+      <a href="{% url 'tramplin:public_profile' mentor.pk %}" class="mentor-pill">
+        {% if mentor.avatar %}
+          <img src="{{ mentor.avatar.url }}" alt="{{ mentor.display_name|default:mentor.username }}"
+               class="w-10 h-10 rounded-xl object-cover flex-shrink-0" style="border:1px solid #BFDBFE;">
+        {% else %}
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+            {{ mentor.display_name|first|upper|default:"М" }}
+          </div>
+        {% endif %}
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium truncate" style="color:#1E293B;">{{ mentor.display_name|default:mentor.username }}</p>
+          <p class="text-xs mt-0.5" style="color:#475569;">
+            {% if mentor.mentor_status == 'available' %}
+              <span class="inline-block w-1.5 h-1.5 rounded-full mr-1 -mb-px" style="background:#22C55E;"></span>Доступен для менторства
+            {% else %}
+              <span class="inline-block w-1.5 h-1.5 rounded-full mr-1 -mb-px" style="background:#F59E0B;"></span>Временно занят
+            {% endif %}
+          </p>
+        </div>
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="#CBD5E1" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+</main>
+
+{% include "tramplin/_site_footer.html" %}
+
+<script>
+  window.TRAMPLIN_CHAT_TARGET = {
+    id: {{ curator_user.pk }},
+    name: "{{ curator_user.display_name|default:curator_user.username|escapejs }}",
+    initial: "{{ curator_user.display_name|first|upper|default:'К' }}",
+    isMentor: false,
+    skills: "",
+    avatarUrl: "{{ curator_user.avatar_url|escapejs }}",
+  };
+</script>
+</body>
+</html>

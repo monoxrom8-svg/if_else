@@ -1,0 +1,16 @@
+{% load static %}
+<footer class="border-t border-[#E2E8F0]">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2.5">
+      <img src="{% static 'tramplin/logo.svg' %}" alt="Трамплин" class="w-6 h-6 rounded-md object-cover">
+      <span class="text-sm font-medium tracking-widest uppercase" style="color:#1E293B;">Трамплин</span>
+      <a href="{% url 'tramplin:privacy_policy' %}" class="text-sm hover:text-[#2563EB] transition-colors" style="color:#94A3B8;" title="Политика конфиденциальности">© 2026 Трамплин</a>
+    </div>
+    <div class="flex flex-wrap items-center gap-5 text-sm" style="color:#94A3B8;">
+      <a href="/" class="hover:text-[#2563EB] transition-colors">Главная</a>
+      <a href="{% url 'tramplin:companies' %}" class="hover:text-[#2563EB] transition-colors">Компании</a>
+      <a href="#" class="hover:text-[#2563EB] transition-colors">О проекте</a>
+      <a href="#" class="hover:text-[#2563EB] transition-colors">Поддержка</a>
+    </div>
+  </div>
+</footer>

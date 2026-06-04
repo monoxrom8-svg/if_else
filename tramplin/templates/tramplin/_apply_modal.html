@@ -1,0 +1,132 @@
+{% comment %}
+  Reusable Apply Modal + Toast.
+  Requires: Lucide icons CDN loaded on the page.
+  Usage: {% include "tramplin/_apply_modal.html" %}
+  Trigger: openApplyModal(oppId, oppTitle) from JS.
+{% endcomment %}
+
+<!-- ── Apply Modal ─────────────────────────────────────────────────────────── -->
+<div id="applyModal"
+     class="fixed inset-0 z-[10050] hidden items-center justify-center p-4"
+     style="background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg" style="border:1px solid #E2E8F0;">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-4 px-6 pt-6 pb-4" style="border-bottom:1px solid #E2E8F0;">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.15em] uppercase mb-1" style="color:#2563EB;">Отклик</p>
+        <h2 id="modalTitle" class="text-base font-semibold leading-snug" style="color:#1E293B;">Название вакансии</h2>
+      </div>
+      <button onclick="closeApplyModal()"
+              class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-[#F1F5F9]"
+              style="color:#94A3B8;" aria-label="Закрыть">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <form id="applyForm" method="POST" action="">
+      {% csrf_token %}
+      <div class="px-6 py-5 space-y-4">
+
+        <!-- Profile info notice -->
+        <div class="flex items-start gap-3 rounded-xl p-4" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+          <i data-lucide="user-check" class="w-4 h-4 flex-shrink-0 mt-0.5" style="color:#2563EB;"></i>
+          <p class="text-xs leading-relaxed" style="color:#1E293B;">
+            Ваш профиль (резюме, навыки, портфолио) будет автоматически прикреплён к отклику.
+            Убедитесь, что он актуален в
+            <a href="{% url 'tramplin:seeker_dashboard' %}" class="font-semibold underline" style="color:#2563EB;">личном кабинете</a>.
+          </p>
+        </div>
+
+        <!-- Cover letter -->
+        <div>
+          <label for="coverLetter" class="block text-xs font-semibold mb-1.5" style="color:#475569;">
+            Сопроводительное письмо
+            <span class="font-normal" style="color:#94A3B8;">(необязательно)</span>
+          </label>
+          <textarea id="coverLetter" name="cover_letter" rows="4"
+                    placeholder="Расскажите, почему вы подходите на эту позицию..."
+                    class="w-full text-sm rounded-xl px-4 py-3 resize-none outline-none transition-all"
+                    style="border:1px solid #E2E8F0;color:#1E293B;background:#FAFAFA;"
+                    onfocus="this.style.borderColor='#2563EB';this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)'"
+                    onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'"></textarea>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 pb-6">
+        <button type="button" onclick="closeApplyModal()"
+                class="px-5 py-2.5 text-sm font-medium rounded-xl transition-all hover:bg-[#F1F5F9]"
+                style="color:#475569;border:1px solid #E2E8F0;">
+          Отмена
+        </button>
+        <button type="submit"
+                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all hover:bg-[#1D4ED8] hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                style="background:#2563EB;color:#FFFFFF;">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          Отправить отклик
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Toast Notification ──────────────────────────────────────────────────── -->
+{% if messages %}
+<div id="toastContainer" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none">
+  {% for message in messages %}
+  <div class="toast-item pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg text-sm font-medium"
+       style="background:#FFFFFF;border:1px solid {% if message.tags == 'success' %}#A7F3D0{% elif message.tags == 'error' %}#FECACA{% else %}#BFDBFE{% endif %};color:#1E293B;min-width:280px;max-width:380px;">
+    {% if message.tags == 'success' %}
+      <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0" style="color:#059669;"></i>
+    {% elif message.tags == 'error' %}
+      <i data-lucide="x-circle" class="w-5 h-5 flex-shrink-0" style="color:#DC2626;"></i>
+    {% else %}
+      <i data-lucide="info" class="w-5 h-5 flex-shrink-0" style="color:#2563EB;"></i>
+    {% endif %}
+    <span>{{ message }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script>
+  function openApplyModal(oppId, oppTitle) {
+    document.getElementById('modalTitle').textContent = oppTitle;
+    document.getElementById('applyForm').action = '/apply/' + oppId + '/';
+    document.getElementById('coverLetter').value = '';
+    const modal = document.getElementById('applyModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function closeApplyModal() {
+    const modal = document.getElementById('applyModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  // Close on backdrop click
+  document.getElementById('applyModal').addEventListener('click', function(e) {
+    if (e.target === this) closeApplyModal();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeApplyModal();
+  });
+
+  // Auto-dismiss toasts
+  document.querySelectorAll('.toast-item').forEach(function(el) {
+    setTimeout(function() {
+      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(20px)';
+      setTimeout(function() { el.remove(); }, 400);
+    }, 4000);
+  });
+</script>

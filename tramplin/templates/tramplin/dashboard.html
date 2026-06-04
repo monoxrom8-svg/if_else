@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Личный кабинет — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>*{font-family:'Inter',sans-serif;}</style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 bg-[#F8FAFC]">
+  {% load static %}
+  <!-- Logo header -->
+  <a href="/" class="flex items-center gap-2.5 mb-8">
+    <img src="{% static 'tramplin/logo.svg' %}" alt="Трамплин" class="w-8 h-8 rounded-lg object-cover">
+    <span class="text-base font-semibold tracking-wide text-[#1E293B]">Трамплин</span>
+  </a>
+  <div class="rounded-xl p-10 max-w-md w-full text-center bg-white border border-[#E2E8F0] shadow-sm">
+    <div class="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5 bg-[#EFF6FF] border border-[#BFDBFE]">
+      {% if user.role == 'employer' %}
+      <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      {% else %}
+      <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S1 18.523 1 13c0-.85.109-1.673.314-2.457L12 14z"/></svg>
+      {% endif %}
+    </div>
+    <h1 class="text-2xl font-semibold mb-1 text-[#1E293B]">Добро пожаловать, {{ user.display_name|default:user.username }}!</h1>
+    <p class="text-sm mb-4 text-[#475569]">{% if user.role == 'employer' %}Аккаунт работодателя{% else %}Аккаунт соискателя{% endif %}</p>
+    {% if user.role == 'employer' and not user.is_verified_employer %}
+    <div class="rounded-lg p-3 text-sm mb-6 bg-amber-50 border border-amber-200 text-amber-700">Ваш аккаунт ожидает верификации. Публикация вакансий будет доступна после проверки.</div>
+    {% endif %}
+    <div class="flex gap-3 justify-center mt-6">
+      <a href="/" class="px-5 py-2.5 text-sm font-semibold rounded-lg transition-all bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm">На главную</a>
+      <a href="{% url 'tramplin:logout' %}" class="px-5 py-2.5 text-sm font-medium rounded-lg transition-colors bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0] hover:bg-[#E2E8F0]">Выйти</a>
+    </div>
+  </div>
+</body>
+</html>

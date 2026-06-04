@@ -1,0 +1,430 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>{{ employer.company_name|default:employer.display_name }} — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','sans-serif'] },
+          colors: { brand: '#2563EB' },
+          boxShadow: {
+            'card': '0 2px 16px rgba(37,99,235,0.07),0 1px 3px rgba(0,0,0,0.05)',
+            'card-hover': '0 8px 40px rgba(37,99,235,0.14),0 2px 8px rgba(0,0,0,0.07)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .opp-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+    .opp-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(37,99,235,0.1);border-color:#CBD5E1;}
+    .badge-vacancy{background:#EFF6FF;color:#2563EB;}
+    .badge-internship{background:#ECFDF5;color:#059669;}
+    .badge-mentorship{background:#F5F3FF;color:#7C3AED;}
+    .badge-event{background:#FFFBEB;color:#D97706;}
+    .fmt-remote{background:#ECFDF5;color:#059669;}
+    .fmt-hybrid{background:#FFFBEB;color:#D97706;}
+    .fmt-office{background:#EFF6FF;color:#2563EB;}
+    .star-filled{color:#F59E0B;}
+    .star-empty{color:#E2E8F0;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+  </style>
+</head>
+<body class="antialiased">
+{% include "tramplin/_navbar.html" %}
+
+{% if messages %}
+<div class="max-w-screen-xl mx-auto px-6 pt-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium" style="{% if msg.tags == 'success' %}background:rgba(16,185,129,0.1);color:#059669;border:1px solid #A7F3D0;{% else %}background:rgba(239,68,68,0.1);color:#DC2626;border:1px solid #FECACA;{% endif %}">
+    {% if msg.tags == 'success' %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {% else %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    {% endif %}
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- HERO BANNER -->
+<section class="relative overflow-hidden">
+  {% if profile.cover_image_url %}
+  <div class="h-56 md:h-72 w-full bg-cover bg-center relative" style="background-image:url('{{ profile.cover_image_url }}');">
+    <div class="absolute inset-0" style="background:linear-gradient(to bottom,rgba(255,255,255,0.1),rgba(30,41,59,0.3));"></div>
+  </div>
+  {% else %}
+  <div class="h-56 md:h-72 w-full relative" style="background:linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%);">
+    <div class="absolute inset-0 opacity-5" style="background-image:radial-gradient(circle at 20% 50%,#CBD5E1 1px,transparent 1px),radial-gradient(circle at 80% 20%,#CBD5E1 1px,transparent 1px);background-size:40px 40px;"></div>
+  </div>
+  {% endif %}
+  <div class="max-w-screen-xl mx-auto px-6">
+    <div class="relative -mt-16 rounded-xl p-5 md:p-8 flex flex-col md:flex-row gap-5 md:gap-6 items-start md:items-center" style="background:#FFFFFF;backdrop-filter:blur(20px);border:1px solid #E2E8F0;box-shadow:0 8px 32px rgba(37,99,235,0.08);">
+      {% if employer.avatar %}<img src="{{ employer.avatar.url }}" alt="{{ employer.company_name|default:employer.display_name }}" class="w-20 h-20 rounded-xl object-cover flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="border:1px solid #BFDBFE;">{% else %}<div class="w-20 h-20 rounded-xl flex items-center justify-center text-3xl font-bold flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">{{ employer.company_name|first|upper|default:"?" }}</div>{% endif %}
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-3 mb-1">
+          <h1 class="text-xl md:text-3xl font-light tracking-[0.06em] uppercase" style="color:#1E293B;">{{ employer.company_name|default:employer.display_name }}</h1>
+          {% if employer.is_verified_employer %}<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Верифицирована</span>{% endif %}
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm mb-3" style="color:#475569;">
+          {% if employer.company_industry %}<span>{{ employer.company_industry }}</span>{% endif %}
+          {% if profile.office_address %}<span>{{ profile.office_address }}</span>{% endif %}
+          {% if profile.founded_year %}<span>Основана в {{ profile.founded_year }}</span>{% endif %}
+          {% if profile.team_size %}<span>{{ profile.team_size }}</span>{% endif %}
+          {% if total_reviews > 0 %}<span class="font-medium flex items-center gap-1" style="color:#2563EB;"><svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> {{ avg_rating }} <span style="color:#94A3B8;font-weight:400;">({{ total_reviews }} отзыв{{ total_reviews|pluralize:",,ов" }})</span></span>{% endif %}
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {% if employer.company_website %}<a href="{{ employer.company_website }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all hover:shadow-[0_0_10px_#BFDBFE]" class="bg-[#2563EB] text-white">Сайт</a>{% endif %}
+          {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md" style="background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;">LinkedIn</a>{% endif %}
+          {% if profile.telegram_url %}<a href="{{ profile.telegram_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md" style="background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;">Telegram</a>{% endif %}
+          {% if profile.vk_url %}<a href="{{ profile.vk_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md" style="background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;">ВКонтакте</a>{% endif %}
+        </div>
+      </div>
+      <div class="flex-shrink-0 text-center rounded-lg px-5 py-4" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+        <div class="text-3xl font-semibold" style="color:#2563EB;">{{ active_opps.count }}</div>
+        <div class="text-xs font-medium mt-0.5" style="color:#475569;">открытых вакансий</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<div class="max-w-screen-xl mx-auto px-4 md:px-6 py-8 md:py-10 space-y-10 md:space-y-12">
+
+  {% if employer.company_description %}
+  <section>
+    <h2 class="text-xl font-light tracking-[0.1em] uppercase mb-4" style="color:#1E293B;">О компании</h2>
+    <div class="rounded-xl p-6 md:p-8" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+      <p class="leading-loose whitespace-pre-line line-clamp-4 md:line-clamp-none" style="color:#475569;">{{ employer.company_description }}</p>
+      {% if employer.company_video_url %}
+      <a href="{{ employer.company_video_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-4 px-4 py-2 text-sm font-medium rounded-lg" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        Видео-презентация компании
+      </a>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if tech_stack or values or perks %}
+  <section>
+    <h2 class="text-xl font-light tracking-[0.1em] uppercase mb-6" style="color:#1E293B;">Культура и технологии</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">      {% if tech_stack %}
+      <div class="rounded-xl p-6 flex flex-col gap-4" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;"><svg class="w-4 h-4" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+          <h3 class="font-medium" style="color:#1E293B;">Технологии</h3>
+        </div>
+        {% for category, techs in tech_stack.items %}
+        <div>
+          <p class="text-xs font-semibold tracking-widest uppercase mb-2" style="color:#94A3B8;">{{ category }}</p>
+          <div class="flex flex-wrap gap-1.5">
+            {% for tech in techs %}
+            <span class="px-2.5 py-1 text-xs font-medium rounded-full" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">{{ tech }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-xl p-6 flex items-center justify-center text-sm" style="border:1px dashed #CBD5E1;color:#94A3B8;">Технологии не указаны</div>
+      {% endif %}
+
+      {% if values %}
+      <div class="rounded-xl p-6 flex flex-col gap-4" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#E2E8F0;border:1px solid #E2E8F0;"><svg class="w-4 h-4" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
+          <h3 class="font-medium" style="color:#1E293B;">Наши ценности</h3>
+        </div>
+        <div class="space-y-4">
+          {% for val in values %}
+          <div class="flex items-start gap-3">
+            <span class="text-xl flex-shrink-0 mt-0.5">{{ val.emoji|default:"✦" }}</span>
+            <div>
+              <p class="font-medium text-sm leading-snug" style="color:#1E293B;">{{ val.title }}</p>
+              {% if val.desc %}<p class="text-xs mt-0.5 leading-relaxed" style="color:#475569;">{{ val.desc }}</p>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="rounded-xl p-6 flex items-center justify-center text-sm" style="border:1px dashed #CBD5E1;color:#94A3B8;">Ценности не указаны</div>
+      {% endif %}
+
+      {% if perks %}
+      <div class="rounded-xl p-6 flex flex-col gap-4" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#E2E8F0;border:1px solid #E2E8F0;"><svg class="w-4 h-4" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg></div>
+          <h3 class="font-medium" style="color:#1E293B;">Преимущества и льготы</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          {% for perk in perks %}
+          <div class="flex items-center gap-2 rounded-lg px-3 py-2.5" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB]">
+              {% if perk.icon %}{{ perk.icon }}{% else %}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              {% endif %}
+            </span>
+            <span class="text-xs font-medium leading-tight" style="color:#475569;">{{ perk.title }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="rounded-xl p-6 flex items-center justify-center text-sm" style="border:1px dashed #CBD5E1;color:#94A3B8;">Льготы не указаны</div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-light tracking-[0.1em] uppercase" style="color:#1E293B;">Открытые вакансии и мероприятия</h2>
+      <span class="text-sm" style="color:#94A3B8;">{{ active_opps.count }} позиций</span>
+    </div>
+    {% if active_opps %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">      {% for opp in active_opps %}
+      <div class="opp-card p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-3">
+            {% if employer.avatar %}<img src="{{ employer.avatar.url }}" alt="" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" style="border:1px solid #BFDBFE;">{% else %}<div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">{{ employer.company_name|first|upper|default:"?" }}</div>{% endif %}
+            <div>
+              <p class="font-medium text-sm leading-snug" style="color:#1E293B;">{{ opp.title }}</p>
+              <p class="text-xs mt-0.5" style="color:#94A3B8;">{{ employer.company_name|default:employer.display_name }}</p>
+            </div>
+          </div>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 {% if opp.type == 'vacancy' %}badge-vacancy{% elif opp.type == 'internship' %}badge-internship{% elif opp.type == 'mentorship' %}badge-mentorship{% else %}badge-event{% endif %}">{{ opp.type_label }}</span>
+        </div>
+        <p class="text-xs leading-relaxed line-clamp-2" style="color:#475569;">{{ opp.description }}</p>
+        {% if opp.skills_list %}
+        <div class="flex flex-wrap gap-1">
+          {% for skill in opp.skills_list|slice:":4" %}<span class="px-2 py-0.5 text-xs font-medium rounded-full" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">{{ skill }}</span>{% endfor %}
+          {% if opp.skills_list|length > 4 %}<span class="px-2 py-0.5 text-xs font-medium rounded-full" style="background:#F1F5F9;color:#94A3B8;">+{{ opp.skills_list|length|add:"-4" }}</span>{% endif %}
+        </div>
+        {% endif %}
+        <div class="flex items-center justify-between pt-1 mt-auto" style="border-top:1px solid #E2E8F0;">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if opp.format == 'remote' %}fmt-remote{% elif opp.format == 'hybrid' %}fmt-hybrid{% else %}fmt-office{% endif %}">{{ opp.format_label }}</span>
+            {% if opp.salary %}<span class="text-xs font-semibold" style="color:#2563EB;">{{ opp.salary }}</span>{% endif %}
+          </div>
+          {% if opp.location %}<span class="text-xs truncate max-w-[100px]" style="color:#94A3B8;">{{ opp.location }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="rounded-xl p-12 text-center" style="border:1px dashed #CBD5E1;">
+      <p class="font-medium" style="color:#94A3B8;">Нет открытых вакансий</p>
+      <p class="text-sm mt-1" style="color:#94A3B8;">Следите за обновлениями — компания скоро опубликует новые позиции</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section id="reviews">
+    <h2 class="text-xl font-light tracking-[0.1em] uppercase mb-6" style="color:#1E293B;">Отзывы о компании</h2>
+
+    <!-- Rating summary card -->
+    {% if total_reviews > 0 %}
+    <div class="rounded-xl p-5 md:p-6 mb-6" style="background:#F8FAFC;border:1px solid #E2E8F0; flex flex-col sm:flex-row gap-6 items-center"
+         style="box-shadow:0 2px 16px rgba(37,99,235,0.07);">
+      <!-- Big score -->
+      <div class="text-center flex-shrink-0">
+        <div class="text-6xl font-light leading-none" style="color:#1E293B;">{{ avg_rating }}</div>
+        <div class="flex justify-center gap-0.5 mt-2">
+          {% for i in "12345" %}
+          <svg class="w-5 h-5 {% if forloop.counter <= avg_rating|floatformat:"0" %}star-filled{% else %}star-empty{% endif %}"
+               fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+          {% endfor %}
+        </div>
+        <p class="text-[#94A3B8] text-xs mt-1">{{ total_reviews }} отзыв{{ total_reviews|pluralize:",,ов" }}</p>
+      </div>
+      <!-- Bar chart -->
+      <div class="flex-1 w-full space-y-1.5">
+        {% for star in "54321" %}
+        {% with count=rating_counts|default_if_none:0 %}
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-[#475569] font-medium w-4 text-right">{{ star }}</span>
+          <svg class="w-3.5 h-3.5 star-filled flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <div class="flex-1 rounded-full h-1.5 overflow-hidden" style="background:#E2E8F0;">
+            {% if star == "5" %}<div class="h-full rounded-full" style="background:#F59E0B;" style="width:{% widthratio rating_counts.5 total_reviews 100 %}%"></div>
+            {% elif star == "4" %}<div class="h-full rounded-full" style="background:#F59E0B;" style="width:{% widthratio rating_counts.4 total_reviews 100 %}%"></div>
+            {% elif star == "3" %}<div class="h-full rounded-full" style="background:#F59E0B;" style="width:{% widthratio rating_counts.3 total_reviews 100 %}%"></div>
+            {% elif star == "2" %}<div class="h-full rounded-full" style="background:#F59E0B;" style="width:{% widthratio rating_counts.2 total_reviews 100 %}%"></div>
+            {% else %}<div class="h-full rounded-full" style="background:#F59E0B;" style="width:{% widthratio rating_counts.1 total_reviews 100 %}%"></div>
+            {% endif %}
+          </div>
+          {% if star == "5" %}<span class="text-[#94A3B8] w-4">{{ rating_counts.5 }}</span>
+          {% elif star == "4" %}<span class="text-[#94A3B8] w-4">{{ rating_counts.4 }}</span>
+          {% elif star == "3" %}<span class="text-[#94A3B8] w-4">{{ rating_counts.3 }}</span>
+          {% elif star == "2" %}<span class="text-[#94A3B8] w-4">{{ rating_counts.2 }}</span>
+          {% else %}<span class="text-[#94A3B8] w-4">{{ rating_counts.1 }}</span>
+          {% endif %}
+        </div>
+        {% endwith %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Review list -->
+    {% if reviews %}
+    <div class="space-y-4 mb-8">
+      {% for review in reviews %}
+      <div class="rounded-xl p-5" style="background:#F8FAFC;border:1px solid #E2E8F0;"
+           style="box-shadow:0 2px 16px rgba(37,99,235,0.05);">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3">
+            <!-- Avatar -->
+            <a href="{% url 'tramplin:public_profile' review.author.pk %}" class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 hover:opacity-80 transition-opacity overflow-hidden" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+              {% if review.author.avatar %}<img src="{{ review.author.avatar.url }}" alt="" class="w-9 h-9 object-cover">{% else %}{{ review.author.display_name|first|upper|default:"?" }}{% endif %}
+            </a>
+            <div>
+              <a href="{% url 'tramplin:public_profile' review.author.pk %}" class="font-medium text-sm hover:text-[#2563EB] transition-colors" style="color:#1E293B;">{{ review.author.display_name|default:review.author.username }}</a>
+              <p class="text-xs" style="color:#94A3B8;">{{ review.created_at|date:"d M Y" }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Stars -->
+            <div class="flex gap-0.5">
+              {% for i in "12345" %}
+              <svg class="w-4 h-4 {% if forloop.counter <= review.rating %}star-filled{% else %}star-empty{% endif %}"
+                   fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+              {% endfor %}
+            </div>
+            <!-- Delete (author or staff) -->
+            {% if user.is_authenticated and user.is_staff or user == review.author %}
+            <form method="post" action="{% url 'tramplin:delete_review' review.id %}" class="inline">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('Удалить отзыв?')"
+                      style="color:#CBD5E1;background:none;border:none;cursor:pointer;" title="Удалить отзыв">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% if review.vacancy_tag %}
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;" mb-2">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+            {{ review.vacancy_tag }}
+          </span>
+        {% endif %}
+        <p class="text-sm leading-relaxed" style="color:#475569;">{{ review.text }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="rounded-xl p-10 text-center mb-8" style="border:1px dashed #CBD5E1;">
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:#F1F5F9;border:1px solid #E2E8F0;">
+        <svg class="w-6 h-6" fill="none" stroke="#94A3B8" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      </div>
+      <p class="font-medium" style="color:#94A3B8;">Отзывов пока нет</p>
+      <p class="text-sm mt-1" style="color:#94A3B8;">Будьте первым, кто оставит отзыв об этой компании</p>
+    </div>
+    {% endif %}
+
+    <!-- ── Write a review (auth guard) ── -->
+    <div class="rounded-xl p-5 md:p-8" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+      <h3 class="font-medium mb-4" style="color:#1E293B;">Оставить отзыв</h3>
+      {% if user.is_authenticated %}
+        {% if user_has_reviewed %}
+        <div class="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Вы уже оставили отзыв об этой компании
+        </div>
+        {% elif review_form %}
+        <form method="post" action="#reviews" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="submit_review"/>
+          <!-- Rating -->
+          <div>
+            <label class="block text-sm font-semibold text-[#334155] mb-2">Оценка</label>
+            <div class="flex gap-2" id="starRating">
+              {% for i in "12345" %}
+              <label class="cursor-pointer">
+                <input type="radio" name="rating" value="{{ forloop.counter }}" class="sr-only"
+                       {% if forloop.counter == 5 %}checked{% endif %}/>
+                <svg class="w-8 h-8 star-filled hover:scale-110 transition-transform" id="star-{{ forloop.counter }}"
+                     fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Vacancy tag -->
+          <div>
+            <label class="block text-sm font-semibold text-[#334155] mb-1.5">Вакансия / позиция <span class="text-[#94A3B8] font-normal">(необязательно)</span></label>
+            <input type="text" name="vacancy_tag" placeholder="Python Backend Developer"
+                   class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-all" style="background:#FFFFFF;border:1px solid #E2E8F0;color:#1E293B;"/>
+          </div>
+          <!-- Text -->
+          <div>
+            <label class="block text-sm font-semibold text-[#334155] mb-1.5">Отзыв</label>
+            <textarea name="text" rows="4" required
+                      placeholder="Поделитесь своим опытом работы с этой компанией..."
+                      class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-all resize-none" style="background:#FFFFFF;border:1px solid #E2E8F0;color:#1E293B;"></textarea>
+          </div>
+          <button type="submit"
+                  class="px-6 py-2.5 bg-[#2563EB] text-white text-sm font-semibold rounded-xl hover:bg-[#1D4ED8] transition-colors shadow-sm"
+                  style="box-shadow:0 2px 8px rgba(37,99,235,.3);">
+            Опубликовать отзыв
+          </button>
+        </form>
+        {% endif %}
+      {% else %}
+      <div class="flex items-center gap-3 rounded-lg px-5 py-4" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+        <svg class="w-5 h-5 flex-shrink-0" style="color:#2563EB;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <p class="text-sm" style="color:#475569;">
+          <a href="{% url 'tramplin:login' %}" class="font-semibold hover:opacity-80 transition-opacity" style="color:#2563EB;">Войдите</a>,
+          чтобы оставить отзыв
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+</div><!-- /main content -->
+
+{% include "tramplin/_site_footer.html" %}
+
+<script>
+  // Interactive star rating
+  const radios = document.querySelectorAll('#starRating input[type=radio]');
+  const stars = document.querySelectorAll('#starRating svg');
+  function updateStars(val) {
+    stars.forEach((s, i) => {
+      s.style.color = i < val ? '#F59E0B' : '#E2E8F0';
+    });
+  }
+  radios.forEach((r, idx) => {
+    r.addEventListener('change', () => updateStars(idx + 1));
+  });
+  // Init with checked value
+  const checked = document.querySelector('#starRating input:checked');
+  if (checked) updateStars(parseInt(checked.value));
+</script>
+
+</body>
+</html>
+

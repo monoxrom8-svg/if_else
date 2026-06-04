@@ -1,0 +1,29 @@
+{# Безвозвратное удаление своего аккаунта #}
+<div class="card delete-account-card mt-4 lg:mt-5 border border-red-200 bg-red-50/40">
+  <div class="flex items-start gap-3 mb-3">
+    <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    </div>
+    <div>
+      <h3 class="font-semibold text-[#1E293B] text-sm">Удаление аккаунта</h3>
+      <p class="text-xs text-[#64748B] mt-1 leading-relaxed">
+        Профиль, отклики, сообщения и другие данные будут удалены без возможности восстановления.
+        {% if user.role == 'employer' %} Ваши объявления и отзывы о компании также исчезнут с платформы.{% endif %}
+      </p>
+    </div>
+  </div>
+  <form method="post" action="{% url 'tramplin:delete_my_account' %}" class="space-y-2.5 max-w-md"
+        onsubmit="return confirm('Удалить аккаунт безвозвратно?');">
+    {% csrf_token %}
+    <div>
+      <label class="label" for="delete-account-password">Текущий пароль</label>
+      <input type="password" name="password" id="delete-account-password" required autocomplete="current-password"
+             class="input-field"/>
+    </div>
+    <label class="flex items-start gap-2 text-sm text-[#475569] cursor-pointer">
+      <input type="checkbox" name="confirm_delete" value="1" required class="mt-1"/>
+      <span>Я понимаю, что аккаунт и все связанные данные будут удалены навсегда</span>
+    </label>
+    <button type="submit" class="btn btn-danger btn-sm">Удалить мой аккаунт</button>
+  </form>
+</div>

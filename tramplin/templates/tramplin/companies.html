@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Компании — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .company-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+    .company-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.3);border-color:rgba(37,99,235,0.3);}
+    .search-bar{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:border-color .2s;}
+    .search-bar:focus-within{border-color:rgba(37,99,235,0.5);}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+    html,body{min-height:100%;}
+    body.page-companies{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+    body.page-companies .page-companies-main{flex:1 0 auto;}
+  </style>
+</head>
+<body class="antialiased page-companies">
+{% include "tramplin/_navbar.html" %}
+
+<main class="page-companies-main flex flex-col">
+<section class="pt-10 pb-10 md:pt-20 md:pb-16 px-4 md:px-6 relative overflow-hidden" style="background:linear-gradient(180deg,#EFF6FF 0%,transparent 100%);">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,#F8FAFC 0%,transparent 70%);transform:translate(30%,-30%);"></div>
+  <div class="max-w-screen-xl mx-auto relative text-center">
+    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+      <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#2563EB;"></span><span class="relative inline-flex rounded-full h-2 w-2" style="background:#2563EB;"></span></span>
+      {{ total }} компани{{ total|pluralize:"я,и,й" }} на платформе
+    </div>
+    <h1 class="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.06em] uppercase mb-3" style="color:#1E293B;">Компании</h1>
+    <p class="text-sm md:text-base mb-8 leading-relaxed max-w-lg mx-auto" style="color:#475569;">Найди компанию мечты — ищи по названию, отрасли или вакансии</p>
+    <form method="get" action="{% url 'tramplin:companies' %}">
+      <div class="search-bar max-w-2xl mx-auto flex items-center gap-3 px-5 py-3">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" name="q" value="{{ q }}" placeholder="Название компании, отрасль или вакансия..." class="flex-1 text-sm outline-none bg-transparent font-medium" style="color:#1E293B;"/>
+        {% if q %}<a href="{% url 'tramplin:companies' %}" class="flex-shrink-0 transition-colors" style="color:#94A3B8;"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></a>{% endif %}
+        <button type="submit" class="px-5 py-2 text-sm font-semibold rounded-lg flex-shrink-0 transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" style="background:#2563EB;color:#FFFFFF;">Найти</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<div class="max-w-screen-xl mx-auto px-4 md:px-6 py-8 md:py-10">
+  <div class="flex items-center gap-3 mb-6">
+    <p class="text-sm" style="color:#475569;">
+      {% if q %}По запросу <span class="font-semibold" style="color:#1E293B;">"{{ q }}"</span> найдено:{% endif %}
+      <span class="font-semibold" style="color:#2563EB;">{{ total }}</span> компани{{ total|pluralize:"я,и,й" }}
+    </p>
+    {% if q %}<a href="{% url 'tramplin:companies' %}" class="text-xs underline transition-opacity hover:opacity-70" style="color:#94A3B8;">сбросить</a>{% endif %}
+  </div>
+
+  {% if employers %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+    {% for employer in employers %}
+    <a href="{% url 'tramplin:company_profile' employer.pk %}" class="company-card p-6 flex flex-col gap-4 group">
+      <div class="flex items-center gap-3">
+        {% if employer.avatar %}<img src="{{ employer.avatar.url }}" alt="{{ employer.company_name|default:employer.display_name }}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" style="border:1px solid #BFDBFE;">{% else %}<div class="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">{{ employer.company_name|first|upper|default:"?" }}</div>{% endif %}
+        <div class="min-w-0">
+          <p class="font-medium text-sm leading-snug truncate transition-colors group-hover:text-[#2563EB]" style="color:#1E293B;">{{ employer.company_name|default:employer.display_name }}</p>
+          {% if employer.company_industry %}<p class="text-xs truncate mt-0.5" style="color:#94A3B8;">{{ employer.company_industry }}</p>{% endif %}
+        </div>
+      </div>
+      {% if employer.company_description %}
+      <p class="text-xs leading-relaxed line-clamp-2 flex-1" style="color:#475569;">{{ employer.company_description }}</p>
+      {% else %}
+      <p class="text-xs italic flex-1" style="color:#CBD5E1;">Описание не добавлено</p>
+      {% endif %}
+      <div class="flex items-center justify-between pt-3" style="border-top:1px solid #E2E8F0;">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium {% if employer.active_count > 0 %}{% else %}{% endif %}" style="{% if employer.active_count > 0 %}background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;{% else %}background:#F1F5F9;color:#94A3B8;{% endif %}">
+          {% if employer.active_count > 0 %}<span class="w-1.5 h-1.5 rounded-full" style="background:#2563EB;"></span>{{ employer.active_count }} вакансий{% else %}Нет вакансий{% endif %}
+        </span>
+        {% if employer.is_verified_employer %}<span class="inline-flex items-center gap-1 text-xs font-medium" style="color:#2563EB;"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Верифицирована</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-24 rounded-xl" style="border:1px solid #E2E8F0;background:#F8FAFC;">
+    <div class="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5" style="background:#EFF6FF;border:1px solid #DBEAFE;">
+      <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+    <h3 class="text-lg font-light tracking-wide uppercase mb-2" style="color:#1E293B;">Ничего не найдено</h3>
+    <p class="text-sm mb-6 max-w-sm mx-auto leading-relaxed" style="color:#94A3B8;">Попробуй другой запрос или посмотри все компании</p>
+    <a href="{% url 'tramplin:companies' %}" class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" style="background:#2563EB;color:#FFFFFF;">Показать все компании</a>
+  </div>
+  {% endif %}
+</div>
+</main>
+
+{% include "tramplin/_site_footer.html" %}
+</body>
+</html>

@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>ИТ-Мероприятия — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .event-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden;}
+    .event-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#2563EB,rgba(37,99,235,0.3));opacity:0;transition:opacity .2s;}
+    .event-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4);border-color:rgba(37,99,235,0.3);}
+    .event-card:hover::before{opacity:1;}
+    .company-card{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;transition:transform .2s,box-shadow .2s;}
+    .company-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+    .fmt-remote{background:#ECFDF5;color:#059669;}
+    .fmt-hybrid{background:#FFFBEB;color:#D97706;}
+    .fmt-office{background:#EFF6FF;color:#2563EB;}
+    .type-event{background:#EFF6FF;color:#2563EB;}
+    .badge-open{background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;}
+    .badge-past{background:#E2E8F0;color:#94A3B8;border:1px solid #E2E8F0;}
+    .stat-card{background:#F8FAFC;backdrop-filter:blur(12px);border:1px solid #E2E8F0;}
+    .search-bar{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;transition:border-color .2s;}
+    .search-bar:focus-within{border-color:rgba(37,99,235,0.5);}
+    .perk-pill{display:inline-flex;align-items:center;gap:6px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:100px;padding:6px 14px;font-size:.8125rem;font-weight:500;color:#2563EB;}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+    .float{animation:float 4s ease-in-out infinite;}
+    .float-delay{animation:float 4s ease-in-out 1.5s infinite;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+    select option{background:#FFFFFF;color:#1E293B;}
+  </style>
+</head>
+<body class="antialiased">
+{% include "tramplin/_navbar.html" %}
+
+<!-- HERO -->
+<section class="pt-10 pb-10 md:pt-20 md:pb-24 px-4 md:px-6 relative overflow-hidden" style="background:linear-gradient(180deg,#EFF6FF 0%,transparent 100%);">
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,#F8FAFC 0%,transparent 70%);transform:translate(30%,-30%);"></div>
+  <div class="max-w-screen-xl mx-auto relative">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;">
+          <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#2563EB;"></span><span class="relative inline-flex rounded-full h-2 w-2" style="background:#2563EB;"></span></span>
+          {{ total }} мероприяти{{ total|pluralize:"е,я,й" }} доступно прямо сейчас
+        </div>
+        <h1 class="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.06em] uppercase leading-tight mb-4 md:mb-5" style="color:#1E293B;">
+          ИТ-Мероприятия:<br/><span style="color:#2563EB;">Твой старт в комьюнити</span>
+        </h1>
+        <p class="text-sm md:text-base leading-relaxed md:leading-loose mb-6 md:mb-8 max-w-lg line-clamp-2 md:line-clamp-none" style="color:#475569;">Хакатоны, митапы, вебинары — здесь рождаются связи, проекты и карьеры. Найди своё мероприятие и сделай первый шаг в IT-сообщество.</p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="#event-cards" class="flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all bg-[#2563EB] text-white hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:scale-[1.02] w-full sm:w-auto">
+            Смотреть мероприятия <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <a href="{% url 'tramplin:companies' %}" class="hidden sm:inline-flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-lg transition-all" style="border:1px solid #CBD5E1;color:#1E293B;">Компании-партнёры</a>
+        </div>
+      </div>
+      <div class="relative h-72 lg:h-80 hidden lg:block">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 float">
+          <div class="w-28 h-28 rounded-2xl flex items-center justify-center" style="background:#EFF6FF;border:1px solid #BFDBFE;transform:rotate(-8deg);box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+            <svg class="w-14 h-14" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+        </div>
+        <div class="absolute top-4 left-8 float-delay">
+          <div class="w-16 h-16 rounded-xl flex items-center justify-center" style="background:#EFF6FF;border:1px solid #BFDBFE;transform:rotate(6deg);">
+            <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+        </div>
+        <div class="absolute bottom-4 right-8 float">
+          <div class="w-16 h-16 rounded-xl flex items-center justify-center" style="background:#EFF6FF;border:1px solid #BFDBFE;transform:rotate(-8deg);">
+            <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 md:mt-14">
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">{{ total }}+</div><div class="text-xs" style="color:#475569;">активных мероприятий</div></div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">Бесплатно</div><div class="text-xs" style="color:#475569;">большинство событий</div></div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">Онлайн</div><div class="text-xs" style="color:#475569;">и офлайн форматы</div></div>
+      <div class="stat-card rounded-xl px-5 py-4 text-center"><div class="text-2xl font-semibold mb-0.5" style="color:#2563EB;">Нетворкинг</div><div class="text-xs" style="color:#475569;">с топ-специалистами</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- DUAL TARGET -->
+<section class="py-10 md:py-20 px-4 md:px-6" style="border-top:1px solid #E2E8F0;">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="text-center mb-8 md:mb-12">
+      <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-3" style="color:#2563EB;">Для кого это?</p>
+      <h2 class="text-3xl font-light tracking-[0.1em] uppercase mb-3" style="color:#1E293B;">Мероприятия — это для всех</h2>
+      <p class="max-w-xl mx-auto leading-loose" style="color:#475569;">Неважно, кто ты — студент в поиске первого оффера или HR-директор крупной компании.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="rounded-2xl p-8" style="background:#F8FAFC;border:1px solid #BFDBFE;">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#DBEAFE;border:1px solid #BFDBFE;">
+            <svg class="w-6 h-6" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-semibold tracking-widest uppercase mb-0.5" style="color:#2563EB;">Для студентов</div>
+            <h3 class="text-xl font-light tracking-wide uppercase" style="color:#1E293B;">Твой старт в IT</h3>
+          </div>
+        </div>
+        <p class="text-sm md:text-base leading-relaxed md:leading-loose mb-6 md:mb-8 line-clamp-3 md:line-clamp-none" style="color:#475569;">Хакатоны, митапы и лекции — это твой шанс познакомиться с будущими коллегами, найти ментора и получить реальный опыт, который усилит твоё резюме.</p>
+        <div class="space-y-3 mb-6 hidden md:block">
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#EFF6FF;border:1px solid #BFDBFE;"><svg class="w-3.5 h-3.5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">Нетворкинг</span> — знакомства с разработчиками из топ-компаний</p></div>
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#EFF6FF;border:1px solid #BFDBFE;"><svg class="w-3.5 h-3.5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">Практические навыки</span> — решаешь реальные задачи в команде за 24–48 часов</p></div>
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#EFF6FF;border:1px solid #BFDBFE;"><svg class="w-3.5 h-3.5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">Резюме</span> — участие в хакатоне — весомый плюс для работодателя</p></div>
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#EFF6FF;border:1px solid #BFDBFE;"><svg class="w-3.5 h-3.5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">Менторы</span> — живое общение с экспертами</p></div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="perk-pill">Призы и гранты</span>
+          <span class="perk-pill">Сертификаты</span>
+          <span class="perk-pill">Нетворкинг</span>
+        </div>
+      </div>
+      <div class="rounded-2xl p-8" style="background:#F1F5F9;border:1px solid #E2E8F0;">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#E2E8F0;border:1px solid #E2E8F0;">
+            <svg class="w-6 h-6" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-semibold tracking-widest uppercase mb-0.5" style="color:#475569;">Для работодателей</div>
+            <h3 class="text-xl font-light tracking-wide uppercase" style="color:#1E293B;">Инструмент HR-бренда</h3>
+          </div>
+        </div>
+        <p class="text-sm md:text-base leading-relaxed md:leading-loose mb-6 md:mb-8 line-clamp-2 md:line-clamp-none" style="color:#475569;">Мероприятия — мощный инструмент для построения HR-бренда, поиска проактивных талантов и демонстрации экспертизы вашей команды.</p>
+        <div class="space-y-3 mb-6 hidden md:block">
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#F1F5F9;border:1px solid #E2E8F0;"><svg class="w-3.5 h-3.5" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">HR-бренд</span> — покажите культуру компании</p></div>
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#F1F5F9;border:1px solid #E2E8F0;"><svg class="w-3.5 h-3.5" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">Проактивные таланты</span> — участники хакатонов уже доказали инициативность</p></div>
+          <div class="flex items-start gap-3"><div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#F1F5F9;border:1px solid #E2E8F0;"><svg class="w-3.5 h-3.5" fill="none" stroke="#475569" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div><p class="text-sm leading-relaxed" style="color:#475569;"><span class="font-semibold" style="color:#1E293B;">Прямой контакт</span> — живое общение с кандидатами без посредников</p></div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="perk-pill" style="color:#475569;border-color:#E2E8F0;background:#F8FAFC;">Целевой найм</span>
+          <span class="perk-pill" style="color:#475569;border-color:#E2E8F0;background:#F8FAFC;">Узнаваемость</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if featured_companies %}
+<section class="py-10 md:py-16 px-4 md:px-6" style="border-top:1px solid #E2E8F0;">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="flex items-end justify-between mb-8 md:mb-10 gap-4">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-2" style="color:#2563EB;">Наши партнёры</p>
+        <h2 class="text-2xl font-light tracking-[0.1em] uppercase" style="color:#1E293B;">О мероприятиях наших партнёров</h2>
+      </div>
+      <a href="{% url 'tramplin:companies' %}" class="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70" style="color:#2563EB;white-space:nowrap;">
+        Все компании <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for fc in featured_companies %}
+      <a href="{% url 'tramplin:company_profile' fc.employer__id %}" class="company-card p-5 flex items-start gap-4 group">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center font-bold text-lg flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#DBEAFE;border:1px solid #BFDBFE;color:#2563EB;">{{ fc.employer__company_name|first|upper }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-sm truncate transition-colors group-hover:text-[#2563EB]" style="color:#1E293B;">{{ fc.employer__company_name|default:"Компания" }}</div>
+          {% if fc.employer__company_industry %}<div class="text-xs mt-0.5" style="color:#94A3B8;">{{ fc.employer__company_industry }}</div>{% endif %}
+          <div class="flex items-center gap-1.5 mt-2">
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">{{ fc.count }} мероприяти{{ fc.count|pluralize:"е,я,й" }}</span>
+          </div>
+        </div>
+        <svg class="w-4 h-4 flex-shrink-0 mt-1 transition-colors group-hover:text-[#2563EB]" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- EVENT CARDS -->
+<section id="event-cards" class="py-10 md:py-16 px-4 md:px-6">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-2" style="color:#2563EB;">Открытые события</p>
+        <h2 class="text-2xl font-light tracking-[0.1em] uppercase" style="color:#1E293B;">Актуальные мероприятия</h2>
+        <p class="text-sm mt-1" style="color:#475569;">
+          {% if total %}Найдено <span class="font-semibold" style="color:#2563EB;" id="resultCount">{{ total }}</span> мероприяти{{ total|pluralize:"е,я,й" }}{% else %}Мероприятия появятся здесь после прохождения модерации{% endif %}
+        </p>
+      </div>
+      <div class="search-bar flex flex-col sm:flex-row gap-2 p-2 w-full md:w-auto md:min-w-[520px]">
+        <div class="flex items-center gap-2 flex-1 px-3 py-2">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="searchInput" type="text" placeholder="Название или навык..." class="w-full text-sm outline-none bg-transparent font-medium" style="color:#1E293B;"/>
+        </div>
+        <div class="w-px hidden sm:block self-stretch my-2" style="background:#E2E8F0;"></div>
+        <select id="formatFilter" class="text-sm font-medium bg-transparent outline-none px-3 py-2 cursor-pointer" style="color:#475569;">
+          <option value="">Все форматы</option><option value="remote">Онлайн</option><option value="office">Офлайн</option><option value="hybrid">Гибрид</option>
+        </select>
+        <div class="w-px hidden sm:block self-stretch my-2" style="background:#E2E8F0;"></div>
+        <select id="statusFilter" class="text-sm font-medium bg-transparent outline-none px-3 py-2 cursor-pointer" style="color:#475569;">
+          <option value="">Все события</option><option value="upcoming">Предстоящие</option><option value="past">Прошедшие</option>
+        </select>
+      </div>
+    </div>
+
+    {% if events %}
+    <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {% for event in events %}{% with employer=event.employer %}
+      <article class="event-card flex flex-col" data-title="{{ event.title|lower }}" data-desc="{{ event.description|lower }}" data-skills="{{ event.skills_required|lower }}" data-format="{{ event.format }}" data-expires="{{ event.expires_at|date:'Y-m-d'|default:'' }}">
+        <div class="p-5 pb-0 flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-lg flex items-center justify-center font-bold text-base flex-shrink-0 drop-shadow-[0_2px_10px_rgba(37,99,235,0.3)]" style="background:#DBEAFE;border:1px solid #BFDBFE;color:#2563EB;">{{ employer.company_name|first|upper|default:"?" }}</div>
+            <div>
+              <a href="{% url 'tramplin:company_profile' employer.id %}" class="text-sm font-medium leading-tight block transition-colors hover:text-[#2563EB]" style="color:#1E293B;">{{ employer.company_name|default:employer.display_name }}</a>
+              {% if employer.company_industry %}<div class="text-xs mt-0.5" style="color:#94A3B8;">{{ employer.company_industry }}</div>{% endif %}
+            </div>
+          </div>
+          {% if event.expires_at %}
+            {% if event.expires_at >= today %}
+            <span class="badge-open text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 flex items-center gap-1">
+              <span class="relative flex h-1.5 w-1.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#6EE7B7;"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5" style="background:#6EE7B7;"></span></span>
+              Регистрация открыта
+            </span>
+            {% else %}<span class="badge-past text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0">Завершено</span>{% endif %}
+          {% else %}
+          <span class="badge-open text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 flex items-center gap-1">
+            <span class="relative flex h-1.5 w-1.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#6EE7B7;"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5" style="background:#6EE7B7;"></span></span>
+            Регистрация открыта
+          </span>
+          {% endif %}
+        </div>
+        <div class="p-5 flex-1 flex flex-col">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="type-event text-xs font-medium px-2.5 py-1 rounded-md">Мероприятие</span>
+            {% if event.format == 'remote' %}<span class="fmt-remote text-xs font-medium px-2.5 py-1 rounded-md">Онлайн</span>
+            {% elif event.format == 'office' %}<span class="fmt-office text-xs font-medium px-2.5 py-1 rounded-md">Офлайн</span>
+            {% else %}<span class="fmt-hybrid text-xs font-medium px-2.5 py-1 rounded-md">Гибрид</span>{% endif %}
+          </div>
+          <h3 class="text-base font-medium leading-snug mb-2 line-clamp-2" style="color:#1E293B;">{{ event.title }}</h3>
+          <div class="flex flex-col gap-1.5 mb-3">
+            {% if event.expires_at %}
+            <div class="flex items-center gap-2 text-xs" style="color:#475569;">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span class="font-medium" style="color:#1E293B;">{{ event.expires_at|date:"d E Y" }}</span>
+            </div>
+            {% endif %}
+            {% if event.location %}
+            <div class="flex items-center gap-2 text-xs" style="color:#475569;">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>{{ event.location }}</span>
+            </div>
+            {% endif %}
+          </div>
+          <p class="text-sm leading-relaxed mb-4 line-clamp-2 md:line-clamp-3 flex-1" style="color:#475569;">{{ event.description }}</p>
+          {% if event.skills_required %}
+          <div class="mb-4 hidden md:block">
+            <div class="text-xs font-semibold tracking-widest uppercase mb-2" style="color:#94A3B8;">Что получишь:</div>
+            <div class="flex flex-wrap gap-1.5">
+              {% for skill in event.skills_list %}
+              <span class="text-xs font-medium px-2.5 py-1 rounded-md" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md" style="background:#E2E8F0;color:#475569;">Нетворкинг</span>
+            {% if event.salary %}<span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md" style="background:#EFF6FF;color:#2563EB;">{{ event.salary }}</span>{% endif %}
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md" style="background:#E2E8F0;color:#475569;">Сертификат</span>
+          </div>
+          <div class="flex flex-col gap-2 mt-auto">
+            <a href="{% url 'tramplin:opportunity_detail' event.pk %}" class="w-full flex items-center justify-center gap-2 text-sm font-medium px-5 py-2.5 rounded-lg transition-all hover:shadow-[0_0_10px_#BFDBFE]" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">
+              Подробнее <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+            {% if not user.is_authenticated %}
+              <a href="{% url 'tramplin:login' %}" class="w-full flex items-center justify-center gap-2 text-sm font-medium px-5 py-2.5 rounded-lg transition-all" style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;">Войдите, чтобы откликнуться</a>
+            {% elif user.role == 'seeker' %}
+              {% if event.pk in applied_ids %}
+                <span class="w-full flex items-center justify-center gap-2 text-sm font-medium px-5 py-2.5 rounded-lg cursor-not-allowed" style="background:#E2E8F0;color:#475569;">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>Вы уже откликнулись
+                </span>
+              {% else %}
+                <button onclick="openApplyModal({{ event.pk }}, '{{ event.title|escapejs }}')"
+                        class="w-full flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all hover:bg-[#1D4ED8] hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                        style="background:#2563EB;color:#FFFFFF;">
+                  Откликнуться
+                </button>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endwith %}{% endfor %}
+    </div>
+    <div id="noResults" class="hidden text-center py-20">
+      <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="#CBD5E1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <h3 class="text-lg font-light tracking-wide uppercase mb-2" style="color:#1E293B;">Ничего не найдено</h3>
+      <p class="text-sm" style="color:#94A3B8;">Попробуйте изменить фильтры или поисковый запрос</p>
+    </div>
+    {% else %}
+    <div class="text-center py-24 rounded-xl" style="border:1px solid #E2E8F0;background:#F8FAFC;">
+      <div class="w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6" style="background:#EFF6FF;border:1px solid #DBEAFE;">
+        <svg class="w-10 h-10" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      </div>
+      <h3 class="text-xl font-light tracking-wide uppercase mb-3" style="color:#1E293B;">Мероприятий пока нет</h3>
+      <p class="max-w-sm mx-auto mb-6 leading-relaxed" style="color:#94A3B8;">Мероприятия появятся здесь после того, как работодатели добавят их и они пройдут модерацию.</p>
+      {% if user.is_authenticated and user.role == 'employer' %}
+      <a href="{% url 'tramplin:employer_dashboard' %}" class="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-all hover:shadow-[0_0_15px_rgba(37,99,235,0.3)]" class="bg-[#2563EB] text-white">
+        Добавить мероприятие <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if user.is_authenticated and user.role == 'employer' %}
+<section class="py-10 md:py-16 px-4 md:px-6" style="border-top:1px solid #E2E8F0;">
+  <div class="max-w-screen-xl mx-auto">
+    <div class="rounded-xl p-8 md:p-10 text-center relative overflow-hidden" style="background:#FFFFFF;border:1px solid #BFDBFE;">
+      <div class="absolute inset-0 opacity-5 hidden md:block" style="background-image:radial-gradient(circle at 20% 50%,#2563EB 1px,transparent 1px),radial-gradient(circle at 80% 20%,#2563EB 1px,transparent 1px);background-size:40px 40px;"></div>
+      <div class="relative">
+        <h2 class="text-xl md:text-3xl font-light tracking-[0.1em] uppercase mb-3" style="color:#1E293B;">Проведите своё мероприятие</h2>
+        <p class="text-sm md:text-base mb-6 md:mb-8 max-w-lg mx-auto leading-relaxed md:leading-loose line-clamp-2 md:line-clamp-none" style="color:#475569;">Разместите хакатон, митап или вебинар на Трамплине и найдите проактивных участников из IT-сообщества.</p>
+        <a href="{% url 'tramplin:employer_dashboard' %}" class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-8 py-3.5 rounded-lg transition-all bg-[#2563EB] text-white hover:shadow-[0_0_15px_rgba(37,99,235,0.3)] w-full sm:w-auto">
+          Добавить мероприятие
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% include "tramplin/_site_footer.html" %}
+
+<script>
+(function () {
+  const searchInput  = document.getElementById('searchInput');
+  const formatFilter = document.getElementById('formatFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const grid         = document.getElementById('eventsGrid');
+  const noResults    = document.getElementById('noResults');
+  const countEl      = document.getElementById('resultCount');
+  if (!grid) return;
+  const cards = Array.from(grid.querySelectorAll('article[data-title]'));
+  const today = new Date(); today.setHours(0,0,0,0);
+  function filter() {
+    const q = (searchInput.value || '').toLowerCase().trim();
+    const fmt = formatFilter.value;
+    const status = statusFilter.value;
+    let visible = 0;
+    cards.forEach(card => {
+      const matchQ = !q || card.dataset.title.includes(q) || card.dataset.desc.includes(q) || card.dataset.skills.includes(q);
+      const matchFmt = !fmt || card.dataset.format === fmt;
+      let matchStatus = true;
+      if (status && card.dataset.expires) {
+        const expDate = new Date(card.dataset.expires); expDate.setHours(0,0,0,0);
+        if (status === 'upcoming') matchStatus = expDate >= today;
+        if (status === 'past') matchStatus = expDate < today;
+      }
+      const show = matchQ && matchFmt && matchStatus;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    if (countEl) countEl.textContent = visible;
+    if (noResults) noResults.classList.toggle('hidden', visible > 0);
+  }
+  searchInput.addEventListener('input', filter);
+  formatFilter.addEventListener('change', filter);
+  statusFilter.addEventListener('change', filter);
+})();
+</script>
+
+{% include "tramplin/_apply_modal.html" %}
+<script>lucide.createIcons();</script>
+</body>
+</html>

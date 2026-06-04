@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Стать ментором — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:"Inter",sans-serif;}
+    body{background:#F8FAFC;color:#334155;}
+
+    /* ── Inputs ── */
+    .field-wrap{position:relative;}
+    .input-field{
+      width:100%;padding:.75rem 1rem;
+      border:1.5px solid #E2E8F0;border-radius:10px;
+      font-size:.9rem;color:#1E293B;background:#FFFFFF;
+      transition:border-color .2s,box-shadow .2s;outline:none;
+      line-height:1.6;
+    }
+    .input-field:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+    .input-field::placeholder{color:#CBD5E1;}
+    textarea.input-field{resize:vertical;min-height:120px;}
+    .input-field.error{border-color:#EF4444;box-shadow:0 0 0 3px rgba(239,68,68,.08);}
+
+    /* ── Buttons ── */
+    .btn{
+      padding:.65rem 1.5rem;border-radius:9px;
+      font-size:.9rem;font-weight:600;cursor:pointer;
+      transition:all .2s;border:none;
+      display:inline-flex;align-items:center;gap:.5rem;
+    }
+    .btn-primary{background:#2563EB;color:#fff;}
+    .btn-primary:hover{background:#1D4ED8;box-shadow:0 4px 14px rgba(37,99,235,.35);}
+    .btn-primary:active{transform:scale(.98);}
+    .btn-primary:disabled{background:#93C5FD;cursor:not-allowed;box-shadow:none;}
+    .btn-ghost{background:#F1F5F9;color:#475569;border:1.5px solid #E2E8F0;}
+    .btn-ghost:hover{background:#E2E8F0;border-color:#CBD5E1;}
+
+    /* ── Label ── */
+    .label{
+      display:block;font-size:.75rem;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;
+      color:#64748B;margin-bottom:.5rem;
+    }
+
+    /* ── Checkbox row ── */
+    .check-row{
+      display:flex;align-items:flex-start;gap:.875rem;
+      padding:.875rem 1rem;border-radius:10px;
+      border:1.5px solid #E2E8F0;background:#FFFFFF;
+      cursor:pointer;transition:border-color .2s,background .2s;
+    }
+    .check-row:hover{border-color:#BFDBFE;background:#F8FBFF;}
+    .check-row input[type=checkbox]{
+      margin-top:2px;width:17px;height:17px;flex-shrink:0;
+      accent-color:#2563EB;cursor:pointer;
+    }
+    .check-row.checked{border-color:#BFDBFE;background:#EFF6FF;}
+
+    /* ── Progress steps ── */
+    .step{
+      display:flex;align-items:center;gap:.5rem;
+      font-size:.75rem;font-weight:600;color:#94A3B8;
+    }
+    .step.active{color:#2563EB;}
+    .step.done{color:#10B981;}
+    .step-dot{
+      width:24px;height:24px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.7rem;font-weight:700;flex-shrink:0;
+      background:#E2E8F0;color:#94A3B8;
+    }
+    .step.active .step-dot{background:#2563EB;color:#fff;}
+    .step.done .step-dot{background:#10B981;color:#fff;}
+    .step-line{flex:1;height:1px;background:#E2E8F0;min-width:20px;}
+
+    /* ── Char counter ── */
+    .char-count{font-size:.7rem;color:#94A3B8;text-align:right;margin-top:.25rem;}
+    .char-count.warn{color:#F59E0B;}
+    .char-count.ok{color:#10B981;}
+
+    /* ── Inline error ── */
+    .field-error{font-size:.75rem;color:#EF4444;margin-top:.375rem;display:flex;align-items:center;gap:.25rem;}
+
+    /* ── Shimmer header ── */
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .shimmer-bar{
+      height:3px;border-radius:0 0 3px 3px;
+      background:linear-gradient(90deg,#2563EB,#60A5FA,#2563EB);
+      background-size:200% 100%;
+      animation:shimmer 3s linear infinite;
+    }
+
+    /* ── Spinner ── */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{
+      width:16px;height:16px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.3);
+      border-top-color:#fff;
+      animation:spin .7s linear infinite;
+      display:none;
+    }
+    .btn-primary.loading .spinner{display:block;}
+    .btn-primary.loading .btn-label{display:none;}
+  </style>
+</head>
+<body>
+{% include "tramplin/_navbar.html" %}
+
+<div class="max-w-2xl mx-auto px-4 pt-10 pb-16">
+
+  <!-- ── Page header ── -->
+  <div class="text-center mb-8">
+    <div class="w-14 h-14 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center mx-auto mb-4 shadow-sm">
+      <!-- Lucide GraduationCap -->
+      <svg class="w-7 h-7 text-[#2563EB]" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12v5c3.33 2 8.67 2 12 0v-5"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-[#1E293B]">Стать ментором Трамплина</h1>
+    <p class="text-sm text-[#64748B] mt-2 max-w-sm mx-auto leading-relaxed">
+      Заполните форму — мы рассмотрим заявку и ответим в течение нескольких рабочих дней.
+    </p>
+  </div>
+
+  <!-- ── Progress indicator ── -->
+  <div class="flex items-center gap-2 mb-7 px-1">
+    <div class="step done" id="step1">
+      <div class="step-dot"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div>
+      <span>Профиль</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step active" id="step2">
+      <div class="step-dot">2</div>
+      <span>Заявка</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step3">
+      <div class="step-dot">3</div>
+      <span>Рассмотрение</span>
+    </div>
+  </div>
+
+  <!-- ── Server-side inline errors (non-JS fallback) ── -->
+  {% if messages %}
+  <div class="space-y-2 mb-5">
+    {% for msg in messages %}
+    {% if msg.tags != "success" %}
+    <div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-200">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ msg }}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Form card ── -->
+  <div class="bg-white border border-[#E2E8F0] rounded-2xl shadow-sm overflow-hidden">
+    <div class="shimmer-bar"></div>
+
+    <div class="p-7">
+      <form method="post" id="mentor-form" novalidate>
+        {% csrf_token %}
+
+        <!-- Field 1: Experience -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="label" for="experience_description">
+              Ваш опыт и чем вы можете помочь студентам
+            </label>
+            <span class="char-count" id="exp-count">0 / 1000</span>
+          </div>
+          <div class="field-wrap">
+            <textarea
+              id="experience_description"
+              name="experience_description"
+              rows="6"
+              maxlength="1000"
+              class="input-field"
+              placeholder="Расскажите о своём профессиональном пути, ключевых проектах и о том, чем конкретно вы можете помочь начинающим специалистам…"
+            >{{ experience|default:"" }}</textarea>
+          </div>
+          <div class="field-error hidden" id="exp-error">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Пожалуйста, заполните это поле (минимум 30 символов).
+          </div>
+          <p class="text-xs text-[#94A3B8] mt-1.5">Минимум 3–4 предложения. Чем подробнее — тем выше шанс одобрения.</p>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-dashed border-[#E2E8F0] mb-6"></div>
+
+        <!-- Field 2: Stack -->
+        <div class="mb-7">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="label" for="skills_to_teach">
+              Ваш основной стек технологий для менторства
+            </label>
+            <span class="char-count" id="skills-count">0 / 500</span>
+          </div>
+          <div class="field-wrap">
+            <textarea
+              id="skills_to_teach"
+              name="skills_to_teach"
+              rows="3"
+              maxlength="500"
+              class="input-field"
+              placeholder="Например: Python, Django REST Framework, PostgreSQL, Docker, code review, системное проектирование…"
+            >{{ skills|default:"" }}</textarea>
+          </div>
+          <div class="field-error hidden" id="skills-error">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Пожалуйста, укажите хотя бы один навык.
+          </div>
+          <p class="text-xs text-[#94A3B8] mt-1.5">Технологии, инструменты и soft skills, которым вы готовы обучать.</p>
+        </div>
+
+        <!-- ── Legal block ── -->
+        <div class="rounded-xl border border-[#E2E8F0] overflow-hidden mb-7">
+          <!-- Header -->
+          <div class="px-4 py-3 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center gap-2">
+            <!-- Lucide ShieldCheck -->
+            <svg class="w-4 h-4 text-[#2563EB] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span class="text-xs font-700 font-semibold text-[#475569] uppercase tracking-wide">Правовые согласия</span>
+          </div>
+
+          <div class="p-4 space-y-3 bg-white">
+            <!-- Checkbox 1: Privacy policy -->
+            <label class="check-row" id="row-privacy" for="accepted_privacy_policy">
+              <input type="checkbox" id="accepted_privacy_policy" name="accepted_privacy_policy"
+                onchange="toggleCheckRow(this,'row-privacy'); validateConsents()"/>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-[#1E293B]">Политика конфиденциальности</p>
+                <p class="text-xs text-[#64748B] mt-0.5">
+                  Я согласен с
+                  <a href="{% url 'tramplin:privacy_policy' %}" target="_blank" rel="noopener" class="text-[#2563EB] hover:underline">политикой конфиденциальности</a>
+                  программы менторства Трамплина и даю согласие на обработку персональных данных.
+                </p>
+              </div>
+              <!-- Checkmark icon (shown when checked) -->
+              <svg class="w-5 h-5 text-[#2563EB] flex-shrink-0 opacity-0 transition-opacity" id="icon-privacy" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </label>
+
+            <!-- Checkbox 2: Code of honour -->
+            <label class="check-row" id="row-tos" for="accepted_terms_of_service">
+              <input type="checkbox" id="accepted_terms_of_service" name="accepted_terms_of_service"
+                onchange="toggleCheckRow(this,'row-tos'); validateConsents()"/>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-[#1E293B]">Кодекс чести ментора</p>
+                <p class="text-xs text-[#64748B] mt-0.5">
+                  Я принимаю
+                  <a href="#" class="text-[#2563EB] hover:underline">кодекс чести ментора Трамплина</a>
+                  и обязуюсь соблюдать его принципы в работе с подопечными.
+                </p>
+              </div>
+              <svg class="w-5 h-5 text-[#2563EB] flex-shrink-0 opacity-0 transition-opacity" id="icon-tos" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </label>
+          </div>
+
+          <!-- Consent error -->
+          <div class="hidden px-4 pb-3" id="consent-error">
+            <p class="text-xs text-red-500 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Необходимо принять оба соглашения для подачи заявки.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── Submit row ── -->
+        <div class="flex items-center gap-3">
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <div class="spinner"></div>
+            <span class="btn-label flex items-center gap-2">
+              <!-- Lucide Send -->
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Отправить заявку
+            </span>
+          </button>
+          <a href="{% url 'tramplin:seeker_dashboard' %}" class="btn btn-ghost">Отмена</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ── What happens next ── -->
+  <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+    <div class="p-3 rounded-xl bg-white border border-[#E2E8F0]">
+      {% include "tramplin/_empty_icon.html" with icon="mail" size="sm" %}
+      <p class="text-xs font-semibold text-[#1E293B]">Заявка получена</p>
+      <p class="text-xs text-[#94A3B8] mt-0.5">Сразу после отправки</p>
+    </div>
+    <div class="p-3 rounded-xl bg-white border border-[#E2E8F0]">
+      {% include "tramplin/_empty_icon.html" with icon="search" size="sm" %}
+      <p class="text-xs font-semibold text-[#1E293B]">Рассмотрение</p>
+      <p class="text-xs text-[#94A3B8] mt-0.5">1–3 рабочих дня</p>
+    </div>
+    <div class="p-3 rounded-xl bg-white border border-[#E2E8F0]">
+      <div class="mb-1">
+        <svg class="w-5 h-5" fill="none" stroke="#2563EB" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+      </div>
+      <p class="text-xs font-semibold text-[#1E293B]">Статус ментора</p>
+      <p class="text-xs text-[#94A3B8] mt-0.5">После одобрения</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Char counters ──────────────────────────────────────────────
+  function initCounter(textareaId, counterId, max) {
+    const ta = document.getElementById(textareaId);
+    const ct = document.getElementById(counterId);
+    if (!ta || !ct) return;
+    function update() {
+      const len = ta.value.length;
+      ct.textContent = len + " / " + max;
+      ct.className = "char-count" + (len >= max * .9 ? " warn" : len >= 30 ? " ok" : "");
+    }
+    ta.addEventListener("input", update);
+    update();
+  }
+  initCounter("experience_description", "exp-count", 1000);
+  initCounter("skills_to_teach", "skills-count", 500);
+
+  // ── Checkbox visual toggle ─────────────────────────────────────
+  function toggleCheckRow(cb, rowId) {
+    const row = document.getElementById(rowId);
+    const icon = document.getElementById("icon-" + rowId.replace("row-", ""));
+    if (cb.checked) {
+      row.classList.add("checked");
+      if (icon) icon.style.opacity = "1";
+    } else {
+      row.classList.remove("checked");
+      if (icon) icon.style.opacity = "0";
+    }
+  }
+
+  // ── Consent validation ─────────────────────────────────────────
+  function validateConsents() {
+    const p = document.getElementById("accepted_privacy_policy").checked;
+    const t = document.getElementById("accepted_terms_of_service").checked;
+    const err = document.getElementById("consent-error");
+    if (!p || !t) { err.classList.remove("hidden"); return false; }
+    err.classList.add("hidden"); return true;
+  }
+
+  // ── Form validation & submit ───────────────────────────────────
+  document.getElementById("mentor-form").addEventListener("submit", function (e) {
+    let valid = true;
+
+    // Experience
+    const exp = document.getElementById("experience_description");
+    const expErr = document.getElementById("exp-error");
+    if (exp.value.trim().length < 30) {
+      exp.classList.add("error"); expErr.classList.remove("hidden"); valid = false;
+    } else {
+      exp.classList.remove("error"); expErr.classList.add("hidden");
+    }
+
+    // Skills
+    const sk = document.getElementById("skills_to_teach");
+    const skErr = document.getElementById("skills-error");
+    if (sk.value.trim().length < 2) {
+      sk.classList.add("error"); skErr.classList.remove("hidden"); valid = false;
+    } else {
+      sk.classList.remove("error"); skErr.classList.add("hidden");
+    }
+
+    // Consents
+    if (!validateConsents()) valid = false;
+
+    if (!valid) { e.preventDefault(); return; }
+
+    // Loading state
+    const btn = document.getElementById("submit-btn");
+    btn.classList.add("loading");
+    btn.disabled = true;
+  });
+
+  // Clear error state on input
+  ["experience_description", "skills_to_teach"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () {
+      this.classList.remove("error");
+      document.getElementById(id === "experience_description" ? "exp-error" : "skills-error")
+        .classList.add("hidden");
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Вход — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','sans-serif'] },
+          animation: { 'fade-in': 'fadeIn .35s ease both', 'shake': 'shake .4s ease both' },
+          keyframes: {
+            fadeIn: { from: { opacity: 0, transform: 'translateY(12px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+            shake: { '0%,100%': { transform: 'translateX(0)' }, '20%,60%': { transform: 'translateX(-6px)' }, '40%,80%': { transform: 'translateX(6px)' } },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#F8FAFC;min-height:100vh;}
+    .input-wrap{position:relative;}
+    .input-field{width:100%;padding:.625rem 1rem .625rem 2.75rem;border:1px solid #E2E8F0;border-radius:8px;font-size:.9375rem;color:#1E293B;background:#FFFFFF;transition:border-color .2s,box-shadow .2s;outline:none;}
+    .input-field:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+    .input-field.error{border-color:#EF4444;}
+    .input-field::placeholder{color:#94A3B8;}
+    .input-icon{position:absolute;left:.875rem;top:50%;transform:translateY(-50%);color:#94A3B8;pointer-events:none;}
+    .toggle-pw{position:absolute;right:.875rem;top:50%;transform:translateY(-50%);color:#94A3B8;cursor:pointer;background:none;border:none;padding:0;}
+    .toggle-pw:hover{color:#2563EB;}
+    .btn-primary{width:100%;padding:.75rem 1.5rem;background:#2563EB;color:#FFFFFF;border:none;border-radius:8px;font-size:.9375rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+    .btn-primary:hover:not(:disabled){background:#1D4ED8;box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+    .error-msg{color:#EF4444;font-size:.8125rem;margin-top:.25rem;}
+    .social-divider{display:flex;align-items:center;gap:1rem;color:#94A3B8;font-size:.8125rem;}
+    .social-divider::before,.social-divider::after{content:'';flex:1;height:1px;background:#E2E8F0;}
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+  <div class="relative z-10 w-full max-w-5xl animate-fade-in">
+    <div class="rounded-xl overflow-hidden flex min-h-[560px] border border-[#E2E8F0] shadow-xl bg-white">
+
+      <!-- Left panel -->
+      <div class="hidden lg:flex flex-col justify-between w-5/12 p-10 relative overflow-hidden bg-[#1E293B]">
+        <div class="absolute inset-0 opacity-5" style="background-image:radial-gradient(circle at 20% 50%,#FFFFFF 1px,transparent 1px),radial-gradient(circle at 80% 20%,#FFFFFF 1px,transparent 1px);background-size:40px 40px;"></div>
+        <div class="relative z-10">
+          <a href="/" class="flex items-center gap-2.5">
+            {% load static %}
+            <img src="{% static 'tramplin/logo.svg' %}" alt="Трамплин" class="w-8 h-8 rounded-lg object-cover">
+            <span class="text-sm font-semibold text-white">Трамплин</span>
+          </a>
+        </div>
+        <div class="relative z-10">
+          <div class="w-10 h-px mb-8 bg-[#2563EB]"></div>
+          <h2 class="text-2xl font-semibold mb-4 leading-tight text-white">С возвращением</h2>
+          <p class="text-sm leading-relaxed mb-10 text-slate-300">Войдите, чтобы продолжить поиск возможностей и управлять своим профилем.</p>
+          <div class="rounded-lg p-5 bg-white/5 border border-white/10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-[#2563EB]/20 border border-[#2563EB]/30">
+                <svg class="w-4 h-4 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">10 000+ возможностей</div>
+                <div class="text-xs text-slate-400">Вакансии, стажировки, менторство</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-[#2563EB]/20 border border-[#2563EB]/30">
+                <svg class="w-4 h-4 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">500+ компаний</div>
+                <div class="text-xs text-slate-400">Ведущие IT-работодатели России</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="{% url 'tramplin:privacy_policy' %}" class="relative z-10 text-xs text-slate-500 hover:text-[#2563EB] transition-colors">© 2026 Трамплин. Все права защищены.</a>
+      </div>
+
+      <!-- Right form panel -->
+      <div class="flex-1 flex flex-col justify-center p-8 lg:p-12 bg-white">
+        <div class="lg:hidden flex items-center gap-2 mb-8">
+          {% load static %}
+          <img src="{% static 'tramplin/logo.svg' %}" alt="Трамплин" class="w-8 h-8 rounded-lg object-cover">
+          <span class="text-sm font-semibold text-[#1E293B]">Трамплин</span>
+        </div>
+
+        <div class="mb-8">
+          <h1 class="text-2xl font-semibold mb-2 text-[#1E293B]">Вход в аккаунт</h1>
+          <p class="text-sm text-[#475569]">Нет аккаунта? <a href="{% url 'tramplin:register' %}" class="font-medium transition-colors text-[#2563EB] hover:text-[#1D4ED8]">Зарегистрироваться</a></p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="rounded-lg p-3 mb-5 flex items-start gap-2 animate-shake bg-red-50 border border-red-200" id="error-alert">
+          <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div class="text-sm text-red-600">{% for err in form.non_field_errors %}{{ err }}{% endfor %}</div>
+        </div>
+        {% endif %}
+
+        <form method="post" id="login-form" novalidate>
+          {% csrf_token %}
+          <div class="space-y-5">
+            <div>
+              <label class="block text-xs font-semibold tracking-wide uppercase mb-2 text-[#475569]">Email</label>
+              <div class="input-wrap">
+                <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <input type="email" name="username" id="id_username" class="input-field {% if form.username.errors %}error{% endif %}" placeholder="you@example.com" autocomplete="email" value="{{ form.username.value|default:'' }}"/>
+              </div>
+              {% if form.username.errors %}<p class="error-msg">{{ form.username.errors.0 }}</p>{% endif %}
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-semibold tracking-wide uppercase text-[#475569]">Пароль</label>
+                <a href="#" class="text-xs transition-colors text-[#2563EB] hover:text-[#1D4ED8]">Забыли пароль?</a>
+              </div>
+              <div class="input-wrap">
+                <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <input type="password" name="password" id="id_password" class="input-field {% if form.password.errors %}error{% endif %}" placeholder="Ваш пароль" autocomplete="current-password"/>
+                <button type="button" class="toggle-pw" onclick="togglePassword()" aria-label="Показать пароль">
+                  <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                </button>
+              </div>
+              {% if form.password.errors %}<p class="error-msg">{{ form.password.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="flex items-center gap-2.5">
+              <input type="checkbox" name="remember_me" id="id_remember_me" class="w-4 h-4 rounded cursor-pointer" style="accent-color:#2563EB;"/>
+              <label for="id_remember_me" class="text-sm cursor-pointer select-none text-[#475569]">Запомнить меня</label>
+            </div>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn-primary mt-6">
+            <span id="btn-text">Войти</span>
+            <svg id="btn-spinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="social-divider mt-8 mb-6">или</div>
+
+        <div class="text-center">
+          <p class="text-sm mb-3 text-[#475569]">Впервые на Трамплине?</p>
+          <a href="{% url 'tramplin:register' %}" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium rounded-lg transition-all border border-[#E2E8F0] text-[#2563EB] hover:border-[#2563EB] hover:bg-[#EFF6FF]">
+            Создать аккаунт
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('id_password');
+      const icon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
+      } else {
+        input.type = 'password';
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
+      }
+    }
+    document.getElementById('login-form').addEventListener('submit', function() {
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      document.getElementById('btn-text').textContent = 'Входим...';
+      document.getElementById('btn-spinner').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

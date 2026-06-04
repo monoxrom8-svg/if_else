@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Панель управления — Трамплин</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#FFFFFF;color:#334155;}
+    .card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:1.5rem;}
+    .input-field{width:100%;padding:.5rem .875rem;border:1px solid #CBD5E1;border-radius:8px;font-size:.875rem;color:#1E293B;outline:none;background:#FFFFFF;transition:border-color .2s;}
+    .input-field:focus{border-color:rgba(183,167,152,0.6);box-shadow:0 0 0 3px #EFF6FF;}
+    .input-field option{background:#FFFFFF;color:#1E293B;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.45rem 1rem;border-radius:8px;font-size:.8125rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+    .btn-primary{background:#2563EB;color:#FFFFFF;} .btn-primary:hover{box-shadow:0 0 10px rgba(37,99,235,0.3);}
+    .btn-danger{background:#FEF2F2;color:rgba(239,68,68,0.7);border:1px solid #FECACA;} .btn-danger:hover{background:rgba(239,68,68,0.15);}
+    .btn-success{background:rgba(16,185,129,0.08);color:#059669;border:1px solid #A7F3D0;} .btn-success:hover{background:#ECFDF5;}
+    .btn-warn{background:#FFFBEB;color:rgba(245,158,11,0.8);border:1px solid #FDE68A;} .btn-warn:hover{background:#FFFBEB;}
+    .btn-ghost{background:#E2E8F0;color:#475569;border:1px solid #E2E8F0;} .btn-ghost:hover{background:#CBD5E1;}
+    .badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;}
+    .badge-seeker{background:#F5F3FF;color:#7C3AED;}
+    .badge-employer{background:#EFF6FF;color:#2563EB;}
+    .badge-curator{background:#FFFBEB;color:#D97706;}
+    .badge-super{background:#FEF2F2;color:#DC2626;}
+    .badge-blocked{background:#FEF2F2;color:#DC2626;}
+    .badge-active{background:#ECFDF5;color:#059669;}
+    .tab-btn{padding:.5rem 1.25rem;border-radius:8px;font-size:.8125rem;font-weight:600;cursor:pointer;color:#475569;background:transparent;border:none;transition:all .15s;white-space:nowrap;}
+    .tab-btn.active{background:#DBEAFE;color:#2563EB;border:1px solid #BFDBFE;}
+    .user-row{display:flex;align-items:flex-start;gap:1rem;padding:.875rem 1rem;border:1px solid #E2E8F0;border-radius:10px;background:#F1F5F9;transition:border-color .15s;flex-wrap:wrap;}
+    .user-row:hover{border-color:#BFDBFE;}
+    ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+  </style>
+</head>
+<body class="antialiased">
+{% include "tramplin/_navbar.html" %}
+
+{% if messages %}
+<div class="max-w-screen-xl mx-auto px-4 pt-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium" style="{% if msg.tags == 'success' %}background:rgba(16,185,129,0.08);color:#059669;border:1px solid #A7F3D0;{% elif msg.tags == 'error' %}background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;{% else %}background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;{% endif %}">
+    {% if msg.tags == 'success' %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {% elif msg.tags == 'error' %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    {% else %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/></svg>
+    {% endif %}
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-screen-xl mx-auto px-4 md:px-6 py-6 md:py-8">
+  <div class="flex items-start justify-between mb-6 md:mb-8 gap-3">
+    <div>
+      <h1 class="text-xl md:text-2xl font-light tracking-[0.08em] uppercase" style="color:#1E293B;">
+        {% if user.is_superuser %}Панель суперпользователя{% else %}Панель куратора{% endif %}
+      </h1>
+      <p class="text-sm mt-1" style="color:#475569;">
+        {% if user.is_superuser %}Полный доступ: роли, блокировки, верификация, модерация{% else %}Доступ: блокировки, верификация, модерация отзывов{% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6 md:mb-8">
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+      <div class="text-2xl font-extrabold text-slate-900">{{ stats.total_users }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Всего</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+      <div class="text-2xl font-extrabold text-violet-600">{{ stats.seekers }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Соискателей</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+      <div class="text-2xl font-extrabold text-blue-600">{{ stats.employers }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Работодателей</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+      <div class="text-2xl font-extrabold text-amber-600">{{ stats.curators }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Кураторов</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+      <div class="text-2xl font-extrabold text-red-500">{{ stats.blocked }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Заблокировано</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-amber-100 p-4 text-center">
+      <div class="text-2xl font-extrabold text-amber-500">{{ stats.pending_verify }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Ждут верификации</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-orange-100 p-4 text-center">
+      <div class="text-2xl font-extrabold text-orange-500">{{ stats.pending_reviews }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Отзывов на модерации</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-blue-100 p-4 text-center">
+      <div class="text-2xl font-extrabold text-blue-500">{{ stats.pending_opportunities }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Объявлений на модерации</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-indigo-100 p-4 text-center">
+      <div class="text-2xl font-extrabold text-indigo-600">{{ stats.pending_mentors }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Заявок менторов</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-emerald-100 p-4 text-center">
+      <div class="text-2xl font-extrabold text-emerald-600">{{ stats.approved_mentors }}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Активных менторов</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="overflow-x-auto mb-6">
+    <div class="flex gap-1 bg-slate-100 rounded-xl p-1 w-max min-w-full">
+      <button class="tab-btn active" onclick="showTab('users', this)">
+        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Пользователи
+      </button>
+      <button class="tab-btn" onclick="showTab('verify', this)">
+        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        Верификация
+      </button>
+      <button class="tab-btn" onclick="showTab('reviews', this)">
+        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        Отзывы
+      </button>
+      <button class="tab-btn" onclick="showTab('opportunities', this)">
+        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Объявления {% if stats.pending_opportunities %}<span class="ml-1 bg-blue-600 text-white text-xs rounded-full px-1.5">{{ stats.pending_opportunities }}</span>{% endif %}
+      </button>
+      <button class="tab-btn" onclick="showTab('submissions', this)">
+        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Соискатели {% if stats.pending_submissions %}<span class="ml-1 bg-violet-600 text-white text-xs rounded-full px-1.5">{{ stats.pending_submissions }}</span>{% endif %}
+      </button>
+      <button class="tab-btn" onclick="showTab('mentors', this)">
+        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S1 18.523 1 13c0-.85.109-1.673.314-2.457L12 14z"/></svg>
+        Менторство {% if stats.pending_mentors %}<span class="ml-1 bg-indigo-600 text-white text-xs rounded-full px-1.5">{{ stats.pending_mentors }}</span>{% endif %}
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ TAB: Users ══ -->
+  <div id="tab-users">
+    <!-- Filters -->
+    <form method="get" class="flex flex-col gap-3 mb-5 md:flex-row md:flex-wrap md:items-end">
+      <div class="w-full md:w-auto">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Поиск</label>
+        <input type="text" name="q" value="{{ search_q }}" placeholder="Имя, email, компания..."
+               class="input-field md:w-56"/>
+      </div>
+      <div class="w-full md:w-auto">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Роль</label>
+        <select name="role" class="input-field md:w-40">
+          <option value="">Все роли</option>
+          {% for val, label in role_choices %}
+          <option value="{{ val }}" {% if role_filter == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="w-full md:w-auto">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Статус</label>
+        <select name="blocked" class="input-field md:w-40">
+          <option value="">Все</option>
+          <option value="0" {% if blocked_filter == '0' %}selected{% endif %}>Активные</option>
+          <option value="1" {% if blocked_filter == '1' %}selected{% endif %}>Заблокированные</option>
+        </select>
+      </div>
+      <div class="flex gap-2 w-full md:w-auto">
+        <button type="submit" class="btn btn-primary flex-1 md:flex-none">Применить</button>
+        <a href="{% url 'tramplin:admin_panel' %}" class="btn btn-ghost flex-1 md:flex-none">Сбросить</a>
+      </div>
+    </form>
+
+    <!-- User list -->
+    <div class="space-y-2">
+      {% for u in users %}
+      <div class="user-row">
+        <!-- Avatar -->
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-sm flex-shrink-0
+          {% if u.is_superuser %}bg-red-500{% elif u.role == 'curator' %}bg-amber-500{% elif u.role == 'employer' %}bg-blue-600{% else %}bg-violet-500{% endif %}">
+          {{ u.display_name|first|upper|default:"?" }}
+        </div>
+
+        <!-- Name + email + badges -->
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-semibold text-slate-900 text-sm">{{ u.display_name|default:u.username }}</span>
+            {% if u.is_superuser %}
+            <span class="badge badge-super">Суперюзер</span>
+            {% else %}
+            <span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span>
+            {% endif %}
+            {% if u.is_blocked %}
+            <span class="badge badge-blocked flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Заблокирован
+            </span>
+            <button type="button" onclick="openBlockDetail({{ u.pk }})"
+                    class="badge" style="background:#FEE2E2;color:#DC2626;border:1px solid #FECACA;cursor:pointer;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;">
+              Подробнее
+            </button>
+            {% else %}
+            <span class="badge badge-active">Активен</span>
+            {% endif %}
+            {% if u.role == 'employer' and u.is_verified_employer %}
+            <span class="badge" style="background:#DBEAFE;color:#1D4ED8;display:inline-flex;align-items:center;gap:3px;">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Верифицирован
+            </span>
+            {% endif %}
+          </div>
+          <div class="text-xs text-slate-400 mt-0.5 truncate">
+            {{ u.email }}
+            {% if u.company_name %} · {{ u.company_name }}{% endif %}
+            {% if u.is_blocked and u.blocked_reason %} · <span class="text-red-400">{{ u.blocked_reason }}</span>{% endif %}
+          </div>
+        </div>
+
+        <!-- Actions: stacked on mobile, row on md+ -->
+        <div class="w-full md:w-auto flex flex-col md:flex-row gap-2 md:flex-shrink-0 md:items-center">
+
+          {% if request.user.is_superuser and not u.is_superuser %}
+          <form method="post" action="{% url 'tramplin:admin_set_role' u.pk %}" class="flex flex-col md:flex-row gap-2 md:items-center w-full md:w-auto">
+            {% csrf_token %}
+            <select name="role" class="input-field text-xs py-1.5 w-full md:w-32">
+              {% for val, label in role_choices %}
+              <option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-ghost text-xs py-1.5 w-full md:w-auto">Сменить</button>
+          </form>
+          {% endif %}
+
+          {% if u.role == 'employer' %}
+          <form method="post" action="{% url 'tramplin:admin_verify_employer' u.pk %}" class="w-full md:w-auto">
+            {% csrf_token %}
+            <button type="submit" class="btn {% if u.is_verified_employer %}btn-warn{% else %}btn-success{% endif %} text-xs py-1.5 w-full md:w-auto">
+              {% if u.is_verified_employer %}Снять верификацию{% else %}Верифицировать{% endif %}
+            </button>
+          </form>
+          {% endif %}
+
+          {% if not u.is_superuser %}
+          {% if request.user.is_superuser or u.role != 'curator' %}
+          <button onclick="openBlockModal({{ u.pk }}, '{{ u.display_name|default:u.email|escapejs }}', {{ u.is_blocked|yesno:'true,false' }})"
+                  class="btn {% if u.is_blocked %}btn-success{% else %}btn-danger{% endif %} text-xs py-1.5 w-full md:w-auto flex items-center justify-center gap-1.5">
+            {% if u.is_blocked %}
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Разблокировать
+            {% else %}
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Заблокировать
+            {% endif %}
+          </button>
+          {% endif %}
+          {% endif %}
+
+          {% if not u.is_superuser %}
+          {% if request.user.is_superuser or u.role != 'curator' %}
+          <form method="post" action="{% url 'tramplin:admin_delete_user' u.pk %}" class="w-full md:w-auto"
+                onsubmit="return confirm('Удалить профиль «{{ u.display_name|default:u.email|escapejs }}» безвозвратно? Все данные пользователя будут стёрты.');">
+            {% csrf_token %}
+            <input type="hidden" name="return_tab" value="users"/>
+            <button type="submit" class="btn btn-danger text-xs py-1.5 w-full md:w-auto flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Удалить
+            </button>
+          </form>
+          {% endif %}
+          {% endif %}
+
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 text-slate-400">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:#F1F5F9;border:1px solid #E2E8F0;">
+          <svg class="w-6 h-6" fill="none" stroke="#94A3B8" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <p class="text-sm">Пользователи не найдены</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ TAB: Verify employers ══ -->
+  <div id="tab-verify" class="hidden">
+    <div class="space-y-2">
+      {% for emp in pending_employers %}
+      <div class="user-row">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">
+          {{ emp.company_name|first|upper|default:"?" }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-slate-900 text-sm">{{ emp.company_name|default:emp.display_name }}</p>
+          <div class="text-xs text-slate-400 mt-0.5">
+            {{ emp.email }}
+            {% if emp.company_industry %} · {{ emp.company_industry }}{% endif %}
+            {% if emp.inn %} · ИНН: {{ emp.inn }}{% endif %}
+          </div>
+          {% if emp.professional_network_url %}
+          <a href="{{ emp.professional_network_url }}" target="_blank" class="text-xs text-blue-500 hover:underline">LinkedIn / Habr →</a>
+          {% endif %}
+        </div>
+        <div class="w-full md:w-auto flex flex-col md:flex-row gap-2 md:flex-shrink-0 md:items-center">
+          <a href="{% url 'tramplin:company_profile' emp.pk %}" target="_blank" class="btn btn-ghost text-xs py-1.5 w-full md:w-auto">Страница</a>
+          <form method="post" action="{% url 'tramplin:admin_verify_employer' emp.pk %}" class="w-full md:w-auto">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success text-xs py-1.5 w-full md:w-auto flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Верифицировать
+            </button>
+          </form>
+          <button onclick="openBlockModal({{ emp.pk }}, '{{ emp.display_name|default:emp.email|escapejs }}', false)"
+                  class="btn btn-danger text-xs py-1.5 w-full md:w-auto flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Заблокировать
+          </button>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 text-slate-400">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:#ECFDF5;border:1px solid #A7F3D0;">
+          <svg class="w-6 h-6" fill="none" stroke="#059669" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <p class="text-sm">Все работодатели верифицированы</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ TAB: Reviews moderation ══ -->
+  <div id="tab-reviews" class="hidden">
+    <div class="space-y-3">
+      {% for review in pending_reviews %}
+      <div class="bg-white rounded-2xl border border-orange-200 p-4 md:p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <p class="font-semibold text-slate-900 text-sm">
+              {{ review.author.display_name|default:review.author.email }}
+              <span class="text-slate-400 font-normal">→</span>
+              {{ review.company.company_name|default:review.company.display_name }}
+            </p>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+              <div class="flex gap-0.5">
+                {% for i in "12345" %}
+                <svg class="w-3.5 h-3.5 {% if forloop.counter <= review.rating %}text-amber-400{% else %}text-slate-200{% endif %}"
+                     fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                {% endfor %}
+              </div>
+              <span class="text-xs text-slate-400">{{ review.created_at|date:"d M Y" }}</span>
+              {% if review.vacancy_tag %}
+              <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">{{ review.vacancy_tag }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <span class="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-semibold flex-shrink-0">На модерации</span>
+        </div>
+        <p class="text-slate-600 text-sm leading-relaxed mb-4">{{ review.text }}</p>
+        <div class="flex gap-2">
+          <form method="post" action="{% url 'tramplin:admin_moderate_review' review.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="approve"/>
+            <button type="submit" class="btn btn-success text-xs py-1.5 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Одобрить
+            </button>
+          </form>
+          <form method="post" action="{% url 'tramplin:admin_moderate_review' review.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="delete"/>
+            <button type="submit" onclick="return confirm('Удалить отзыв?')" class="btn btn-danger text-xs py-1.5 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Удалить
+            </button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 text-slate-400">
+        {% include "tramplin/_empty_icon.html" with icon="chat" tone="slate" %}
+        <p class="text-sm">Нет отзывов на модерации</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ TAB: Opportunities moderation ══ -->
+  <div id="tab-opportunities" class="hidden">
+    <p class="text-sm text-slate-500 mb-4">Объявления работодателей: модерация и удаление с карты и каталога.</p>
+    <div class="space-y-3">
+      {% for opp in employer_opportunities %}
+      <div class="bg-white rounded-2xl border {% if opp.moderation_status == 'pending' %}border-blue-200{% elif opp.moderation_status == 'approved' %}border-emerald-200{% else %}border-slate-200{% endif %} p-4 md:p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-slate-900 text-sm">{{ opp.title }}</p>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+              <span class="text-xs text-slate-500">{{ opp.employer.company_name|default:opp.employer.display_name }}</span>
+              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">{{ opp.get_type_display }}</span>
+              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">{{ opp.get_format_display }}</span>
+              <span class="text-xs text-slate-400">{{ opp.created_at|date:"d M Y" }}</span>
+            </div>
+            {% if opp.salary %}
+            <p class="text-xs text-blue-600 font-semibold mt-1">{{ opp.salary }}</p>
+            {% endif %}
+            {% if opp.location or opp.postal_code %}
+            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">{% include "tramplin/_icon_pin.html" %}<span>{% if opp.postal_code %}{{ opp.postal_code }}, {% endif %}{{ opp.location }}</span></p>
+            {% endif %}
+            {% if opp.latitude and opp.longitude %}
+            <p class="text-xs text-blue-600 mt-0.5">Карта: {{ opp.latitude|floatformat:5 }}, {{ opp.longitude|floatformat:5 }}</p>
+            {% else %}
+            <p class="text-xs text-amber-600 mt-0.5">Точка на карте не указана</p>
+            {% endif %}
+          </div>
+          {% if opp.moderation_status == 'pending' %}
+          <span class="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-semibold flex-shrink-0">На модерации</span>
+          {% elif opp.moderation_status == 'approved' %}
+          <span class="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold flex-shrink-0">Опубликовано</span>
+          {% else %}
+          <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold flex-shrink-0">Отклонено</span>
+          {% endif %}
+        </div>
+        <p class="text-slate-600 text-sm leading-relaxed mb-3 line-clamp-3">{{ opp.description }}</p>
+        {% if opp.requirements %}
+        <p class="text-xs text-slate-400 mb-4 line-clamp-2"><span class="font-semibold text-slate-500">Требования:</span> {{ opp.requirements }}</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-2">
+          {% if opp.moderation_status == 'pending' %}
+          <form method="post" action="{% url 'tramplin:admin_moderate_opportunity' opp.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="approve"/>
+            <button type="submit" class="btn btn-success text-xs py-1.5 inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Одобрить</button>
+          </form>
+          <form method="post" action="{% url 'tramplin:admin_moderate_opportunity' opp.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="reject"/>
+            <button type="submit" onclick="return confirm('Отклонить объявление?')" class="btn btn-danger text-xs py-1.5 inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>Отклонить</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'tramplin:admin_moderate_opportunity' opp.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="delete"/>
+            <button type="submit" onclick="return confirm('Удалить объявление безвозвратно? Отклики тоже будут удалены.')" class="btn btn-danger text-xs py-1.5 inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Удалить</button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 text-slate-400">
+        {% include "tramplin/_empty_icon.html" with icon="clipboard" tone="slate" %}
+        <p class="text-sm">Нет объявлений работодателей</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ TAB: Seeker map submissions ══ -->
+  <div id="tab-submissions" class="hidden">
+    <div class="space-y-3">
+      {% for sub in pending_submissions %}
+      <div class="bg-white rounded-2xl border border-violet-200 p-4 md:p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-slate-900 text-sm">{{ sub.title }}</p>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+              <span class="text-xs text-slate-500">{{ sub.submitter.display_name|default:sub.submitter.username }}</span>
+              {% if sub.company_name %}<span class="text-xs text-slate-500">{{ sub.company_name }}</span>{% endif %}
+              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{{ sub.type_label }}</span>
+              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{{ sub.format_label }}</span>
+            </div>
+            {% if sub.location or sub.postal_code %}
+            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">{% include "tramplin/_icon_pin.html" %}<span>{% if sub.postal_code %}{{ sub.postal_code }}, {% endif %}{{ sub.location }}</span></p>
+            {% endif %}
+            {% if sub.latitude and sub.longitude %}
+            <p class="text-xs text-violet-600 mt-0.5">Координаты: {{ sub.latitude|floatformat:5 }}, {{ sub.longitude|floatformat:5 }}</p>
+            {% endif %}
+          </div>
+          <span class="text-xs bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full font-semibold flex-shrink-0">От соискателя</span>
+        </div>
+        <p class="text-slate-600 text-sm leading-relaxed mb-3 line-clamp-3">{{ sub.description }}</p>
+        <div class="flex flex-wrap gap-2">
+          <form method="post" action="{% url 'tramplin:admin_moderate_submission' sub.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="approve"/>
+            <button type="submit" class="btn btn-success text-xs py-1.5 inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Опубликовать на карте</button>
+          </form>
+          <form method="post" action="{% url 'tramplin:admin_moderate_submission' sub.pk %}" class="flex gap-2 items-center">
+            {% csrf_token %}<input type="hidden" name="action" value="reject"/>
+            <input type="text" name="comment" placeholder="Причина отклонения" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 max-w-[200px]"/>
+            <button type="submit" onclick="return confirm('Отклонить предложение?')" class="btn btn-danger text-xs py-1.5 inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>Отклонить</button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 text-slate-400">
+        {% include "tramplin/_empty_icon.html" with icon="map-pin" tone="slate" %}
+        <p class="text-sm">Нет предложений соискателей на модерации</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ TAB: Mentor applications moderation ══ -->
+  <div id="tab-mentors" class="hidden">
+
+    <div class="flex flex-wrap gap-3 mb-5">
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-sm font-semibold text-amber-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        На рассмотрении: {{ stats.pending_mentors }}
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-sm font-semibold text-[#2563EB]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        Верифицированных менторов: {{ stats.approved_mentors }}
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      {% for app in pending_mentor_apps %}
+      <div class="bg-white rounded-2xl border border-indigo-200 overflow-hidden shadow-sm">
+        <div class="h-1" style="background:linear-gradient(90deg,#6366F1,#818CF8);"></div>
+        <div class="p-4 md:p-5">
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center font-bold text-indigo-700 text-lg flex-shrink-0">
+                {{ app.user.display_name|first|upper|default:"?" }}
+              </div>
+              <div>
+                <p class="font-semibold text-slate-900 text-sm leading-tight">{{ app.user.display_name|default:app.user.username }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ app.user.email }}</p>
+                {% if app.user.university %}
+                <p class="text-xs text-indigo-600 mt-0.5">{{ app.user.university }}{% if app.user.graduation_year %} · {{ app.user.graduation_year }}{% endif %}</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                На рассмотрении
+              </span>
+              <span class="text-xs text-slate-400">{{ app.applied_at|date:"d M Y, H:i" }}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Опыт и помощь студентам</p>
+              <p class="text-sm text-slate-700 leading-relaxed">{{ app.experience_description }}</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Стек для менторства</p>
+              <p class="text-sm text-slate-700 leading-relaxed">{{ app.skills_to_teach }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium
+              {% if app.accepted_privacy_policy %}bg-emerald-50 text-emerald-700 border border-emerald-200{% else %}bg-red-50 text-red-600 border border-red-200{% endif %}">
+              {% if app.accepted_privacy_policy %}<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>{% else %}<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>{% endif %} Политика конфиденциальности
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium
+              {% if app.accepted_terms_of_service %}bg-emerald-50 text-emerald-700 border border-emerald-200{% else %}bg-red-50 text-red-600 border border-red-200{% endif %}">
+              {% if app.accepted_terms_of_service %}<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>{% else %}<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>{% endif %} Кодекс чести ментора
+            </span>
+            {% if app.user.github_url %}
+            <a href="{{ app.user.github_url }}" target="_blank"
+               class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium bg-slate-100 text-slate-600 border border-slate-200 hover:border-slate-300 transition-colors">
+              GitHub →
+            </a>
+            {% endif %}
+            {% if app.user.portfolio_url %}
+            <a href="{{ app.user.portfolio_url }}" target="_blank"
+               class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] hover:bg-[#DBEAFE] transition-colors">
+              Портфолио →
+            </a>
+            {% endif %}
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
+            <form method="post" action="{% url 'tramplin:admin_moderate_mentor' app.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="approve"/>
+              <button type="submit" class="btn btn-success text-xs py-1.5 px-4 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Одобрить
+              </button>
+            </form>
+            <form method="post" action="{% url 'tramplin:admin_moderate_mentor' app.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="reject"/>
+              <button type="submit"
+                onclick="return confirm('Отклонить заявку {{ app.user.display_name|default:app.user.username|escapejs }}?')"
+                class="btn btn-danger text-xs py-1.5 px-4 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Отклонить
+              </button>
+            </form>
+            <span class="ml-auto text-xs text-slate-400">ID заявки: #{{ app.pk }}</span>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 text-slate-400">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+          <svg class="w-6 h-6" fill="none" stroke="#2563EB" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4.477 10-10 10S1 18.523 1 13c0-.85.109-1.673.314-2.457L12 14z"/></svg>
+        </div>
+        <p class="font-semibold text-slate-600 mb-1">Нет заявок на рассмотрении</p>
+        <p class="text-sm">Все заявки обработаны</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div><!-- /max-w -->
+
+<!-- Block/Unblock modal -->
+<div id="blockModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
+    <h3 id="blockModalTitle" class="font-bold text-slate-900 text-lg mb-4"></h3>
+    <form id="blockForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="block_action" id="blockActionInput" value="block"/>
+      <div id="reasonWrap">
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Причина <span class="text-slate-400 font-normal">(необязательно)</span></label>
+        <input type="text" name="reason" placeholder="Нарушение правил платформы..."
+               class="input-field mb-3"/>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Срок блокировки</label>
+        <select name="duration_days" class="input-field mb-4">
+          <option value="">Бессрочно</option>
+          <option value="1">1 день</option>
+          <option value="3">3 дня</option>
+          <option value="7">7 дней</option>
+          <option value="14">14 дней</option>
+          <option value="30">30 дней</option>
+          <option value="90">90 дней</option>
+        </select>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" id="blockSubmitBtn" class="btn btn-danger flex-1">Заблокировать</button>
+        <button type="button" onclick="closeBlockModal()" class="btn btn-ghost flex-1">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Block Detail modal -->
+<div id="blockDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-slate-900 text-lg">Детали блокировки</h3>
+      <button onclick="closeBlockDetailModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="blockDetailContent" class="space-y-3 mb-5">
+      <div class="flex items-center justify-center py-6">
+        <svg class="w-6 h-6 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button id="blockDetailUnblockBtn" class="btn btn-success flex-1 hidden" onclick="unblockFromDetail()">Разблокировать</button>
+      <button type="button" onclick="closeBlockDetailModal()" class="btn btn-ghost flex-1">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const tabs = ['users','verify','reviews','opportunities','submissions','mentors'];
+  let activeTab = 'users';
+
+  function syncAdminUrl(tabName) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', tabName);
+    const url = window.location.pathname + '?' + params.toString();
+    history.replaceState(null, '', url);
+  }
+
+  function showTab(name, btn) {
+    if (!tabs.includes(name)) return;
+    activeTab = name;
+    tabs.forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+    document.getElementById('tab-' + name).classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    syncAdminUrl(name);
+  }
+
+  function getActiveTab() {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('tab');
+    return tabs.includes(fromUrl) ? fromUrl : activeTab;
+  }
+
+  function attachPreserveTabToForms() {
+    document.querySelectorAll('form[method="post"]').forEach(function(form) {
+      form.addEventListener('submit', function() {
+        const tab = getActiveTab();
+        let inp = form.querySelector('input[name="return_tab"]');
+        if (!inp) {
+          inp = document.createElement('input');
+          inp.type = 'hidden';
+          inp.name = 'return_tab';
+          form.appendChild(inp);
+        }
+        inp.value = tab;
+        const params = new URLSearchParams(window.location.search);
+        ['q', 'role', 'blocked'].forEach(function(key) {
+          const val = params.get(key);
+          if (!val) return;
+          const name = 'return_' + key;
+          let f = form.querySelector('input[name="' + name + '"]');
+          if (!f) {
+            f = document.createElement('input');
+            f.type = 'hidden';
+            f.name = name;
+            form.appendChild(f);
+          }
+          f.value = val;
+        });
+      });
+    });
+    document.querySelectorAll('form[method="get"]').forEach(function(form) {
+      form.addEventListener('submit', function() {
+        let inp = form.querySelector('input[name="tab"]');
+        if (!inp) {
+          inp = document.createElement('input');
+          inp.type = 'hidden';
+          inp.name = 'tab';
+          form.appendChild(inp);
+        }
+        inp.value = getActiveTab();
+      });
+    });
+  }
+
+  function openBlockModal(userId, userName, isBlocked) {
+    const modal = document.getElementById('blockModal');
+    const title = document.getElementById('blockModalTitle');
+    const form = document.getElementById('blockForm');
+    const reasonWrap = document.getElementById('reasonWrap');
+    const submitBtn = document.getElementById('blockSubmitBtn');
+    const actionInput = document.getElementById('blockActionInput');
+    form.action = `/admin-panel/user/${userId}/block/`;
+    if (isBlocked) {
+      title.textContent = `Разблокировать «${userName}»?`;
+      reasonWrap.classList.add('hidden');
+      submitBtn.textContent = 'Разблокировать';
+      submitBtn.className = 'btn btn-success flex-1';
+      actionInput.value = 'unblock';
+    } else {
+      title.textContent = `Заблокировать «${userName}»?`;
+      reasonWrap.classList.remove('hidden');
+      submitBtn.textContent = 'Заблокировать';
+      submitBtn.className = 'btn btn-danger flex-1';
+      actionInput.value = 'block';
+    }
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeBlockModal() {
+    const modal = document.getElementById('blockModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  document.getElementById('blockModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBlockModal();
+  });
+
+  // Block detail modal
+  let _detailUserId = null;
+
+  function openBlockDetail(userId) {
+    _detailUserId = userId;
+    const modal = document.getElementById('blockDetailModal');
+    const content = document.getElementById('blockDetailContent');
+    const unblockBtn = document.getElementById('blockDetailUnblockBtn');
+    content.innerHTML = '<div class="flex items-center justify-center py-6"><svg class="w-6 h-6 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg></div>';
+    unblockBtn.classList.add('hidden');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    fetch(`/admin-panel/user/${userId}/block-detail/`)
+      .then(r => r.json())
+      .then(data => {
+        let html = '';
+        html += `<div class="flex items-center gap-2 p-3 rounded-xl" style="background:#FEF2F2;border:1px solid #FECACA;">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="#DC2626" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="text-sm font-semibold text-red-700">Аккаунт заблокирован</span>
+        </div>`;
+        html += `<div class="space-y-2">`;
+        html += `<div class="flex justify-between text-sm"><span class="text-slate-500">Причина:</span><span class="font-medium text-slate-800 text-right max-w-[60%]">${data.reason || 'Не указана'}</span></div>`;
+        html += `<div class="flex justify-between text-sm"><span class="text-slate-500">Срок:</span><span class="font-medium text-slate-800">${data.is_permanent ? 'Бессрочно' : (data.expired ? 'Истёк ' : '') + data.blocked_until}</span></div>`;
+        if (data.blocked_by_name) {
+          html += `<div class="flex justify-between text-sm"><span class="text-slate-500">Заблокировал:</span><span class="font-medium text-slate-800">${data.blocked_by_name}</span></div>`;
+        }
+        html += `</div>`;
+        content.innerHTML = html;
+        unblockBtn.classList.remove('hidden');
+      })
+      .catch(() => {
+        content.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Ошибка загрузки данных</p>';
+      });
+  }
+
+  function closeBlockDetailModal() {
+    const modal = document.getElementById('blockDetailModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    _detailUserId = null;
+  }
+
+  document.getElementById('blockDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBlockDetailModal();
+  });
+
+  function unblockFromDetail() {
+    if (!_detailUserId) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin-panel/user/${_detailUserId}/block/`;
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const tab = getActiveTab();
+    const params = new URLSearchParams(window.location.search);
+    let extra = `<input type="hidden" name="return_tab" value="${tab}">`;
+    ['q', 'role', 'blocked'].forEach(function(key) {
+      const val = params.get(key);
+      if (val) extra += `<input type="hidden" name="return_${key}" value="${val.replace(/"/g, '&quot;')}">`;
+    });
+    form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${csrf}"><input type="hidden" name="block_action" value="unblock">${extra}`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    attachPreserveTabToForms();
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabMap = { users: 0, verify: 1, reviews: 2, opportunities: 3, submissions: 4, mentors: 5 };
+    if (tab && tabMap[tab] !== undefined && tabBtns[tabMap[tab]]) {
+      showTab(tab, tabBtns[tabMap[tab]]);
+    } else if ({% if stats.pending_mentors > 0 %}true{% else %}false{% endif %} && tabBtns[5]) {
+      showTab('mentors', tabBtns[5]);
+    }
+  });
+</script>
+</body>
+</html>

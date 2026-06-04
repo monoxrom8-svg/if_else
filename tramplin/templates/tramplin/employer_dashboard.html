@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Кабинет работодателя — Трамплин</title>
+  {% load static %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <link rel="stylesheet" href="{% static 'tramplin/leaflet-fix.css' %}"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="{% static 'tramplin/leaflet-tiles.js' %}"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:"Inter",sans-serif;}
+    body{background:#F8FAFC;color:#334155;}
+    .nav-item{display:flex;align-items:center;gap:.75rem;padding:.625rem 1rem;border-radius:8px;font-size:.875rem;font-weight:500;color:#475569;cursor:pointer;transition:all .15s;text-decoration:none;border:none;background:transparent;width:100%;text-align:left;}
+    .nav-item:hover{background:#F1F5F9;color:#1E293B;}
+    .nav-item.active{background:#EFF6FF;color:#2563EB;font-weight:600;border:1px solid #BFDBFE;}
+    .nav-item .icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#F1F5F9;}
+    .nav-item.active .icon{background:#DBEAFE;}
+    .card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:1.5rem;}
+    .input-field{width:100%;padding:.625rem 1rem;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;color:#1E293B;background:#FFFFFF;transition:border-color .2s,box-shadow .2s,background .2s;outline:none;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+    .input-field:hover{border-color:#CBD5E1;background:#FAFCFF;}
+    .input-field:focus{border-color:#6366F1;box-shadow:0 0 0 3.5px rgba(99,102,241,0.15),0 1px 4px rgba(99,102,241,0.1);background:#FFFFFF;}
+    .input-field::placeholder{color:#94A3B8;}
+    textarea.input-field{resize:vertical;}
+    select.input-field{cursor:pointer;}
+    select.input-field option{background:#FFFFFF;color:#1E293B;}
+    .btn{padding:.5rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:.375rem;}
+    .btn-primary{background:#2563EB;color:#FFFFFF;}
+    .btn-primary:hover{background:#1D4ED8;box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+    .btn-ghost{background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;}
+    .btn-ghost:hover{background:#E2E8F0;}
+    .btn-danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;}
+    .btn-danger:hover{background:#FEE2E2;}
+    .btn-success{background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;}
+    .btn-success:hover{background:#D1FAE5;}
+    .badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600;}
+    .badge-active{background:#ECFDF5;color:#059669;}
+    .badge-closed{background:#FEF2F2;color:#DC2626;}
+    .badge-planned{background:#FFFBEB;color:#D97706;}
+    .badge-new{background:#EFF6FF;color:#2563EB;}
+    .badge-accepted{background:#ECFDF5;color:#059669;}
+    .badge-rejected{background:#FEF2F2;color:#DC2626;}
+    .badge-reserve{background:#F5F3FF;color:#7C3AED;}
+    .stat-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:1.25rem 1.5rem;}
+    .section-title{font-size:1.125rem;font-weight:600;color:#1E293B;margin-bottom:1rem;}
+    .label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#475569;margin-bottom:.375rem;}
+    .tab-btn{padding:.5rem 1rem;border-radius:8px;font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .2s;color:#94A3B8;background:transparent;border:none;}
+    .tab-btn.active{background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;}
+    .opp-row{display:flex;align-items:center;gap:1rem;padding:1rem;border:1px solid #E2E8F0;border-radius:10px;background:#FFFFFF;transition:border-color .2s;}
+    .opp-row:hover{border-color:#CBD5E1;}
+    .app-row{display:flex;align-items:center;gap:1rem;padding:.875rem 1rem;border:1px solid #E2E8F0;border-radius:10px;background:#FFFFFF;transition:border-color .2s;}
+    .app-row:hover{border-color:#CBD5E1;}
+    .avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem;flex-shrink:0;background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:2px;}
+  </style>
+</head>
+<body class="has-bottom-nav">
+{% include "tramplin/_navbar.html" %}
+
+<!-- ════════════════════════════════════════════════════════════
+     МОБИЛЬНОЕ МЕНЮ — полноэкранный оверлей с панелью-карточкой
+════════════════════════════════════════════════════════════ -->
+<div id="mobile-menu"
+     class="lg:hidden hidden fixed inset-0 z-30"
+     style="background:rgba(15,23,42,0.5);backdrop-filter:blur(3px);"
+     onclick="toggleMobileMenu()">
+
+  <!-- Панель (клик внутри не закрывает) -->
+  <div class="absolute inset-x-0 top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto"
+       onclick="event.stopPropagation()">
+
+    <!-- ── Профиль-шапка ─────────────────────────────────── -->
+    <div class="bg-white px-5 pt-6 pb-5 flex items-center gap-4">
+      {% if user.avatar %}
+      <img src="{{ user.avatar.url }}" alt=""
+           class="w-16 h-16 rounded-full object-cover border-2 border-blue-100 flex-shrink-0 shadow-sm">
+      {% else %}
+      <div class="w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl flex-shrink-0 bg-blue-50 border-2 border-blue-100 text-[#2563EB] shadow-sm">
+        {{ user.company_name|first|upper|default:"?" }}
+      </div>
+      {% endif %}
+      <div class="min-w-0">
+        <div class="font-bold text-[#1E293B] text-base truncate">{{ user.company_name|default:user.display_name }}</div>
+        <div class="text-xs text-slate-400 mt-0.5">Работодатель</div>
+        {% if user.is_verified_employer %}
+        <span class="inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-[#2563EB] border border-blue-100">
+          <!-- Lucide BadgeCheck -->
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          Верифицирован
+        </span>
+        {% else %}
+        <span class="inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+          <!-- Lucide Clock -->
+          <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Ожидает верификации
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Bento-карточка навигации ──────────────────────── -->
+    <div class="mx-4 mt-0 mb-0 bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+      <nav>
+
+        <!-- Профиль компании — активный (bg-blue-50/50) -->
+        <button onclick="mobileNav('profile')" id="mnav-profile"
+                class="mobile-nav-item w-full flex items-center gap-4 px-5 py-[15px] text-left transition-colors bg-blue-50/60 active:bg-slate-100 border-b border-slate-100">
+          <!-- Lucide Building2 -->
+          <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
+            </svg>
+          </span>
+          <span class="text-sm font-semibold text-[#2563EB] flex-1 text-left">Профиль компании</span>
+          <!-- Lucide ChevronRight -->
+          <svg class="w-4 h-4 text-[#2563EB] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <!-- Мои объявления -->
+        <button onclick="mobileNav('vacancies')" id="mnav-vacancies"
+                class="mobile-nav-item w-full flex items-center gap-4 px-5 py-[15px] text-left transition-colors hover:bg-slate-50 active:bg-slate-100 border-b border-slate-100">
+          <!-- Lucide ClipboardList -->
+          <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+            </svg>
+          </span>
+          <span class="text-sm font-medium text-[#334155] flex-1 text-left">Мои объявления</span>
+          {% if total_opps %}
+          <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold mr-1">{{ total_opps }}</span>
+          {% endif %}
+          <svg class="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <!-- Отклики -->
+        <button onclick="mobileNav('applications')" id="mnav-applications"
+                class="mobile-nav-item w-full flex items-center gap-4 px-5 py-[15px] text-left transition-colors hover:bg-slate-50 active:bg-slate-100 border-b border-slate-100">
+          <!-- Lucide Users -->
+          <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+          <span class="text-sm font-medium text-[#334155] flex-1 text-left">Отклики</span>
+          {% if total_apps %}
+          <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold mr-1">{{ total_apps }}</span>
+          {% endif %}
+          <svg class="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <!-- Новое объявление -->
+        <button onclick="mobileNav('new_opp')" id="mnav-new_opp"
+                class="mobile-nav-item w-full flex items-center gap-4 px-5 py-[15px] text-left transition-colors hover:bg-slate-50 active:bg-slate-100 border-b border-slate-100">
+          <!-- Lucide PlusCircle -->
+          <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>
+            </svg>
+          </span>
+          <span class="text-sm font-medium text-[#334155] flex-1 text-left">Новое объявление</span>
+          <svg class="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <!-- Подходящие кандидаты -->
+        <button onclick="mobileNav('candidates')" id="mnav-candidates"
+                class="mobile-nav-item w-full flex items-center gap-4 px-5 py-[15px] text-left transition-colors hover:bg-slate-50 active:bg-slate-100 border-b border-slate-100">
+          <!-- Lucide Sparkles -->
+          <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+              <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+            </svg>
+          </span>
+          <span class="text-sm font-medium text-[#334155] flex-1 text-left">Подходящие кандидаты</span>
+          {% if matched_seekers %}
+          <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold mr-1">{{ matched_seekers|length }}</span>
+          {% endif %}
+          <svg class="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <!-- Страница компании — всегда видна -->
+        <a href="{% url 'tramplin:company_profile' user.pk %}"
+           class="w-full flex items-center gap-4 px-5 py-[15px] text-left transition-colors hover:bg-slate-50 active:bg-slate-100">
+          <!-- Lucide Eye -->
+          <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </span>
+          <span class="text-sm font-medium text-[#334155] flex-1 text-left">Страница компании</span>
+          <svg class="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+
+      </nav>
+    </div>
+
+    <!-- ── Разделитель + Выйти ───────────────────────────── -->
+    <div class="mx-4 mt-3 mb-6">
+      <div class="h-px bg-slate-200 mb-3"></div>
+      <a href="{% url 'tramplin:logout' %}"
+         class="w-full flex items-center gap-4 px-5 py-[15px] rounded-3xl bg-white border border-slate-100 shadow-md transition-colors hover:bg-red-50 active:bg-red-50">
+        <!-- Lucide LogOut -->
+        <span class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-red-50">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </span>
+        <span class="text-sm font-semibold text-red-600 flex-1 text-left">Выйти</span>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% if messages %}
+<div class="max-w-screen-xl mx-auto px-6 pt-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium
+    {% if msg.tags == "success" %}bg-emerald-50 text-emerald-700 border border-emerald-200
+    {% else %}bg-red-50 text-red-600 border border-red-200{% endif %}">
+    {% if msg.tags == "success" %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {% else %}
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    {% endif %}
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="flex max-w-screen-xl mx-auto px-4 lg:px-6 py-8 gap-6 pb-24 lg:pb-8">
+  <!-- ══════════════════════════════════════════════════════
+       ДЕСКТОП САЙДБАР (≥ lg / 1024px)
+  ══════════════════════════════════════════════════════ -->
+  <aside class="hidden lg:flex w-72 flex-shrink-0">
+    <div class="sticky top-6 w-full">
+
+      <!-- ── Единая карточка-контейнер ───────────────────── -->
+      <div class="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden flex flex-col">
+
+        <!-- ── Профиль-шапка ─────────────────────────────── -->
+        <div class="px-5 pt-6 pb-5 flex flex-col items-center text-center border-b border-slate-100">
+          {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" alt="{{ user.company_name|default:user.display_name }}"
+               class="w-[72px] h-[72px] rounded-2xl object-cover border-2 border-slate-100 shadow-sm">
+          {% else %}
+          <div class="w-[72px] h-[72px] rounded-2xl flex items-center justify-center font-bold text-2xl bg-blue-50 border-2 border-blue-100 text-[#2563EB] shadow-sm">
+            {{ user.company_name|first|upper|default:"?" }}
+          </div>
+          {% endif %}
+          <div class="font-bold mt-3 text-[15px] text-[#1E293B] leading-snug">{{ user.company_name|default:user.display_name }}</div>
+          <div class="flex flex-wrap justify-center gap-1.5 mt-2.5">
+            <!-- Бейдж «Работодатель» -->
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Работодатель
+            </span>
+            {% if user.is_verified_employer %}
+            <!-- Бейдж «Верифицирован» -->
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-[3px] rounded-full bg-blue-50 text-[#2563EB] border border-blue-100">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+                <path d="m9 12 2 2 4-4"/>
+              </svg>
+              Верифицирован
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-[3px] rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              На проверке
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ── Навигация ──────────────────────────────────── -->
+        <nav class="flex flex-col gap-1 px-3 py-3">
+
+          <!-- Профиль компании — активная по умолчанию -->
+          <button onclick="showSection('profile')" id="nav-profile"
+                  class="desk-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 bg-blue-50 text-[#2563EB]">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-blue-100">
+              <!-- Lucide Building2 -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+                <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+                <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+                <path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
+              </svg>
+            </span>
+            <span class="text-sm font-semibold flex-1">Профиль компании</span>
+          </button>
+
+          <!-- Мои объявления -->
+          <button onclick="showSection('vacancies')" id="nav-vacancies"
+                  class="desk-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 text-slate-600 hover:bg-slate-50">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100">
+              <!-- Lucide ClipboardList -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+              </svg>
+            </span>
+            <span class="text-sm font-medium flex-1">Мои объявления</span>
+            {% if total_opps %}<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">{{ total_opps }}</span>{% endif %}
+          </button>
+
+          <!-- Отклики -->
+          <button onclick="showSection('applications')" id="nav-applications"
+                  class="desk-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 text-slate-600 hover:bg-slate-50">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100">
+              <!-- Lucide UserCheck -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <polyline points="16 11 18 13 22 9"/>
+              </svg>
+            </span>
+            <span class="text-sm font-medium flex-1">Отклики</span>
+            {% if total_apps %}<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">{{ total_apps }}</span>{% endif %}
+          </button>
+
+          <!-- Новое объявление -->
+          <button onclick="showSection('new_opp')" id="nav-new_opp"
+                  class="desk-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 text-slate-600 hover:bg-slate-50">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100">
+              <!-- Lucide PlusCircle -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>
+              </svg>
+            </span>
+            <span class="text-sm font-medium flex-1">Новое объявление</span>
+          </button>
+
+          <!-- Подходящие кандидаты -->
+          <button onclick="showSection('candidates')" id="nav-candidates"
+                  class="desk-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 text-slate-600 hover:bg-slate-50">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100">
+              <!-- Lucide Sparkles -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+              </svg>
+            </span>
+            <span class="text-sm font-medium flex-1">Подходящие кандидаты</span>
+            {% if matched_seekers %}<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">{{ matched_seekers|length }}</span>{% endif %}
+          </button>
+
+          <!-- Страница компании -->
+          <a href="{% url 'tramplin:company_profile' user.pk %}"
+             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 text-slate-600 hover:bg-slate-50">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100">
+              <!-- Lucide Eye -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </span>
+            <span class="text-sm font-medium flex-1">Страница компании</span>
+          </a>
+
+        </nav>
+
+        <!-- ── Разделитель + Выйти ─────────────────────────── -->
+        <div class="px-3 pb-3 pt-1 border-t border-slate-100 mt-1">
+          <a href="{% url 'tramplin:logout' %}"
+             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 bg-red-50 hover:bg-red-100 text-red-600">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-100">
+              <!-- Lucide LogOut -->
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </span>
+            <span class="text-sm font-semibold">Выйти</span>
+          </a>
+        </div>
+
+      </div><!-- /card -->
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 min-w-0 space-y-5">
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="stat-card text-center shadow-sm">
+        <div class="text-2xl font-bold text-[#2563EB]">{{ total_opps|default:0 }}</div>
+        <div class="text-xs text-[#94A3B8] mt-0.5">Объявлений</div>
+      </div>
+      <div class="stat-card text-center shadow-sm">
+        <div class="text-2xl font-bold text-emerald-600">{{ active_opps.count|default:0 }}</div>
+        <div class="text-xs text-[#94A3B8] mt-0.5">Активных</div>
+      </div>
+      <div class="stat-card text-center shadow-sm">
+        <div class="text-2xl font-bold text-[#2563EB]">{{ total_apps|default:0 }}</div>
+        <div class="text-xs text-[#94A3B8] mt-0.5">Всего откликов</div>
+      </div>
+      <div class="stat-card text-center shadow-sm">
+        <div class="text-2xl font-bold text-amber-500">{{ all_applications|length|default:0 }}</div>
+        <div class="text-xs text-[#94A3B8] mt-0.5">Откликов</div>
+      </div>
+    </div>
+
+    <!-- SECTION: Company Profile -->
+    <div id="section-profile">
+      <div class="card">
+        <h2 class="section-title">Профиль компании</h2>
+        {% if not user.is_verified_employer %}
+        <div class="rounded-lg p-3 text-sm mb-5 bg-amber-50 border border-amber-200 text-amber-700">
+          Ваш аккаунт ожидает верификации. Публикация объявлений будет доступна после проверки администратором.
+        </div>
+        {% endif %}        <!-- Avatar upload -->
+        <div class="mb-6 pb-6 border-b border-[#E2E8F0]">
+          <p class="label mb-3">Фото профиля</p>
+          {% include "tramplin/_avatar_upload.html" with form_action=request.path %}
+        </div>
+        <form method="post">
+          {% csrf_token %}<input type="hidden" name="action" value="save_profile"/>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in profile_form %}
+            <div {% if field.name == "company_description" %}class="md:col-span-2"{% endif %}>
+              <label class="label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="mt-5"><button type="submit" class="btn btn-primary">Сохранить профиль</button></div>
+        </form>
+      </div>
+      {% include "tramplin/_delete_account_card.html" %}
+    </div>
+
+    <!-- SECTION: My Vacancies -->
+    <div id="section-vacancies" class="hidden">
+      <div class="card">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="section-title mb-0">Мои объявления</h2>
+          <button onclick="showSection('new_opp')" class="btn btn-primary btn-sm">+ Новое объявление</button>
+        </div>
+        {% if active_opps or closed_opps or planned_opps %}
+        <div class="space-y-3">
+          {% for opp in active_opps %}
+          <div class="opp-row flex-wrap gap-y-3">
+            <div class="avatar">{{ opp.title|first|upper }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-[#1E293B] text-sm">{{ opp.title }}</span>
+                <span class="badge badge-{{ opp.status|default:"active" }}">{{ opp.get_status_display|default:"Активна" }}</span>
+                {% if opp.moderation_status == "pending" %}<span class="badge" style="background:#FFFBEB;color:#D97706;">На модерации</span>{% endif %}
+              </div>
+              <div class="text-xs text-[#94A3B8] mt-0.5">{{ opp.get_type_display }} · {{ opp.get_format_display }} · {{ opp.location }}</div>
+            </div>
+            <div class="flex flex-wrap gap-2 flex-shrink-0">
+              <a href="{% url "tramplin:edit_opportunity" opp.pk %}" class="btn btn-ghost btn-sm">Редактировать</a>
+            </div>
+          </div>
+          {% endfor %}
+          {% for opp in closed_opps %}
+          <div class="opp-row flex-wrap gap-y-3">
+            <div class="avatar">{{ opp.title|first|upper }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-[#1E293B] text-sm">{{ opp.title }}</span>
+                <span class="badge badge-closed">{{ opp.get_status_display }}</span>
+              </div>
+              <div class="text-xs text-[#94A3B8] mt-0.5">{{ opp.get_type_display }} · {{ opp.get_format_display }} · {{ opp.location }}</div>
+            </div>
+            <div class="flex flex-wrap gap-2 flex-shrink-0">
+              <a href="{% url "tramplin:edit_opportunity" opp.pk %}" class="btn btn-ghost btn-sm">Редактировать</a>
+            </div>
+          </div>
+          {% endfor %}
+          {% for opp in planned_opps %}
+          <div class="opp-row flex-wrap gap-y-3">
+            <div class="avatar">{{ opp.title|first|upper }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-[#1E293B] text-sm">{{ opp.title }}</span>
+                <span class="badge badge-planned">{{ opp.get_status_display }}</span>
+              </div>
+              <div class="text-xs text-[#94A3B8] mt-0.5">{{ opp.get_type_display }} · {{ opp.get_format_display }} · {{ opp.location }}</div>
+            </div>
+            <div class="flex flex-wrap gap-2 flex-shrink-0">
+              <a href="{% url "tramplin:edit_opportunity" opp.pk %}" class="btn btn-ghost btn-sm">Редактировать</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16 text-[#94A3B8]">
+          <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <p class="text-sm mb-4">У вас пока нет объявлений</p>
+          <button onclick="showSection('new_opp')" class="btn btn-primary btn-sm">Создать первое объявление</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- SECTION: Applications -->
+    <div id="section-applications" class="hidden">
+      <div class="card">
+        <h2 class="section-title">Отклики на ваши объявления</h2>
+        {% if all_applications %}
+        <div class="space-y-3">
+          {% for app in all_applications %}
+          <div class="app-row flex-wrap gap-y-3">
+            <div class="avatar overflow-hidden">{% if app.applicant.avatar %}<img src="{{ app.applicant.avatar.url }}" alt="" class="w-full h-full object-cover">{% else %}{{ app.applicant.display_name|first|upper|default:"?" }}{% endif %}</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-[#1E293B] text-sm">{{ app.applicant.display_name|default:app.applicant.username }}</div>
+              <div class="text-xs text-[#475569]">{{ app.opportunity.title }} · {{ app.created_at|date:"d M Y" }}</div>
+              {% if app.applicant.about %}<p class="text-xs text-[#94A3B8] mt-0.5 line-clamp-1">{{ app.applicant.about }}</p>{% endif %}
+            </div>
+            <div class="flex flex-wrap items-center gap-2 flex-shrink-0">
+              <span class="badge badge-{{ app.status }}">
+                {% if app.status == "new" %}Новый{% elif app.status == "accepted" %}Принят{% elif app.status == "rejected" %}Отклонён{% else %}В резерве{% endif %}
+              </span>
+              <form method="post" action="{% url "tramplin:update_application_status" app.pk %}">
+                {% csrf_token %}
+                <select name="status" onchange="this.form.submit()" class="text-xs border border-[#E2E8F0] rounded-lg px-2 py-1 outline-none bg-white text-[#475569] cursor-pointer">
+                  <option value="new" {% if app.status == "new" %}selected{% endif %}>На рассмотрении</option>
+                  <option value="accepted" {% if app.status == "accepted" %}selected{% endif %}>Принять</option>
+                  <option value="rejected" {% if app.status == "rejected" %}selected{% endif %}>Отклонить</option>
+                  <option value="reserve" {% if app.status == "reserve" %}selected{% endif %}>В резерв</option>
+                </select>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16 text-[#94A3B8]">
+          <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <p class="text-sm">Откликов пока нет</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- SECTION: New Opportunity -->
+    <div id="section-new_opp" class="hidden">
+      <div class="card">
+        <h2 class="section-title">Новое объявление</h2>
+        {% if not user.is_verified_employer %}
+        <div class="rounded-lg p-3 text-sm mb-5 bg-amber-50 border border-amber-200 text-amber-700">
+          Ваш аккаунт ожидает верификации. Публикация объявлений будет доступна после проверки администратором.
+        </div>
+        {% else %}
+        <form method="post">
+          {% csrf_token %}<input type="hidden" name="action" value="create_opportunity"/>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in opp_form %}
+            <div {% if field.name == "description" or field.name == "requirements" or field.name == "skills_required" %}class="md:col-span-2"{% endif %}>
+              <label class="label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.name == "location" %}<p class="text-xs text-[#94A3B8] mt-1">Пример: «Москва, Тверская улица, 7». Не используйте выдуманные улицы — иначе поиск не сработает. Индекс — в поле ниже.</p>{% endif %}
+              {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            {% include "tramplin/_map_location_picker.html" with picker_prefix="opp" has_marker=False location_input_id="id_location" postal_input_id="id_postal_code" %}
+          </div>
+          <div class="mt-5 flex gap-3">
+            <button type="submit" class="btn btn-primary">Отправить на модерацию</button>
+            <button type="button" onclick="showSection('vacancies')" class="btn btn-ghost">Отмена</button>
+          </div>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- SECTION: Matched Candidates -->
+    <div id="section-candidates" class="hidden">
+      {% if not active_opps %}
+      <div class="card text-center py-16">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:#EFF6FF;border:1px solid #BFDBFE;">
+          <svg class="w-6 h-6" fill="none" stroke="#2563EB" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        </div>
+        <div class="font-semibold text-[#1E293B] mb-1">Нет активных вакансий</div>
+        <div class="text-sm text-[#94A3B8] mb-4">Создайте вакансию с указанием навыков, чтобы система подобрала кандидатов</div>
+        <button onclick="showSection('new_opp')" class="btn btn-primary btn-sm">Создать вакансию</button>
+      </div>
+      {% elif not matched_seekers %}
+      <div class="card text-center py-16">
+        {% include "tramplin/_empty_icon.html" with icon="search" %}
+        <div class="font-semibold text-[#1E293B] mb-1">Подходящих кандидатов пока нет</div>
+        <div class="text-sm text-[#94A3B8]">Соискатели с подходящим стеком появятся здесь автоматически</div>
+      </div>
+      {% else %}
+      <div class="card mb-5" style="background:linear-gradient(135deg,#EFF6FF 0%,#FFFFFF 100%);">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#DBEAFE] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div>
+            <div class="font-semibold text-[#1E293B]">Подходящие кандидаты</div>
+            <div class="text-xs text-[#475569]">Соискатели, чей стек совпадает с требованиями ваших активных вакансий</div>
+          </div>
+          <span class="ml-auto text-xs font-semibold px-3 py-1 rounded-full bg-[#DBEAFE] text-[#2563EB] border border-[#BFDBFE]">{{ matched_seekers|length }} кандидатов</span>
+        </div>
+      </div>
+      <div class="space-y-3">
+        {% for item in matched_seekers %}
+        {% with seeker=item.seeker score=item.score %}
+        <div class="app-row flex-wrap gap-y-3 relative">
+          <!-- Match badge -->
+          <div class="absolute top-3 right-3">
+            {% if score >= 80 %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Подходит на {{ score }}%
+            </span>
+            {% elif score >= 50 %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#2563EB] border border-[#BFDBFE]">
+              Подходит на {{ score }}%
+            </span>
+            {% endif %}
+          </div>
+          <div class="avatar overflow-hidden">{% if seeker.avatar %}<img src="{{ seeker.avatar.url }}" alt="" class="w-full h-full object-cover">{% else %}{{ seeker.display_name|first|upper|default:"?" }}{% endif %}</div>
+          <div class="flex-1 min-w-0 pr-36">
+            <div class="font-semibold text-[#1E293B] text-sm">{{ seeker.display_name|default:seeker.username }}</div>
+            {% if seeker.university %}<div class="text-xs text-[#475569]">{{ seeker.university }}{% if seeker.graduation_year %} · {{ seeker.graduation_year }}{% endif %}</div>{% endif %}
+            {% if seeker.about %}<p class="text-xs text-[#94A3B8] mt-0.5 line-clamp-1">{{ seeker.about }}</p>{% endif %}
+            {% if seeker.skills_list %}
+            <div class="flex flex-wrap gap-1 mt-1.5">
+              {% for sk in seeker.skills_list|slice:":5" %}
+              <span class="text-xs px-1.5 py-0.5 rounded border bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]">{{ sk }}</span>
+              {% endfor %}
+              {% if seeker.skills_list|length > 5 %}<span class="text-xs text-[#94A3B8]">+{{ seeker.skills_list|length|add:"-5" }}</span>{% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const SECTIONS = ["profile","vacancies","applications","new_opp","candidates"];
+
+  // Активные стили для десктоп-кнопок (новый дизайн: единая карточка)
+  const DESK_ACTIVE_CLS   = ["bg-blue-50","text-[#2563EB]"];
+  const DESK_INACTIVE_CLS = ["text-slate-600","hover:bg-slate-50"];
+
+  function syncSectionUrl(name) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('section', name);
+    const url = window.location.pathname + '?' + params.toString();
+    history.replaceState(null, '', url);
+  }
+
+  function getActiveSection() {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('section');
+    if (fromUrl && SECTIONS.includes(fromUrl)) return fromUrl;
+    return SECTIONS.find(function(s) {
+      const el = document.getElementById('section-' + s);
+      return el && !el.classList.contains('hidden');
+    }) || 'profile';
+  }
+
+  function attachPreserveSectionToForms() {
+    document.querySelectorAll('form[method="post"]').forEach(function(form) {
+      form.addEventListener('submit', function() {
+        const section = getActiveSection();
+        let inp = form.querySelector('input[name="return_section"]');
+        if (!inp) {
+          inp = document.createElement('input');
+          inp.type = 'hidden';
+          inp.name = 'return_section';
+          form.appendChild(inp);
+        }
+        inp.value = section;
+        const params = new URLSearchParams(window.location.search);
+        ['q', 'app_q'].forEach(function(key) {
+          const val = params.get(key);
+          if (!val) return;
+          const name = 'return_' + key;
+          let f = form.querySelector('input[name="' + name + '"]');
+          if (!f) {
+            f = document.createElement('input');
+            f.type = 'hidden';
+            f.name = name;
+            form.appendChild(f);
+          }
+          f.value = val;
+        });
+      });
+    });
+  }
+
+  function showSection(name) {
+    SECTIONS.forEach(s => {
+      // Скрываем секцию
+      const sec = document.getElementById("section-" + s);
+      if (sec) sec.classList.add("hidden");
+
+      // Сбрасываем стиль десктоп-кнопки
+      const btn = document.getElementById("nav-" + s);
+      if (!btn) return;
+      btn.classList.remove(...DESK_ACTIVE_CLS);
+      btn.classList.add(...DESK_INACTIVE_CLS);
+      // Иконка-квадрат
+      const iconSpan = btn.querySelector("span:first-of-type");
+      if (iconSpan) {
+        iconSpan.classList.remove("bg-blue-100");
+        iconSpan.classList.add("bg-slate-100");
+        const svg = iconSpan.querySelector("svg");
+        if (svg) svg.setAttribute("stroke", "#475569");
+      }
+      // Текст
+      const label = btn.querySelectorAll("span")[1];
+      if (label) {
+        label.classList.remove("font-semibold");
+        label.classList.add("font-medium");
+      }
+    });
+
+    // Показываем нужную секцию
+    const activeSec = document.getElementById("section-" + name);
+    if (activeSec) activeSec.classList.remove("hidden");
+    document.dispatchEvent(new CustomEvent("tramplin:section", { detail: name }));
+    if (name === "new_opp" && window.MapPicker_opp) {
+      setTimeout(function() { window.MapPicker_opp.ensureInit(); }, 350);
+    }
+
+    // Активируем десктоп-кнопку
+    const activeBtn = document.getElementById("nav-" + name);
+    if (activeBtn) {
+      activeBtn.classList.remove(...DESK_INACTIVE_CLS);
+      activeBtn.classList.add(...DESK_ACTIVE_CLS);
+      const iconSpan = activeBtn.querySelector("span:first-of-type");
+      if (iconSpan) {
+        iconSpan.classList.remove("bg-slate-100");
+        iconSpan.classList.add("bg-blue-100");
+        const svg = iconSpan.querySelector("svg");
+        if (svg) svg.setAttribute("stroke", "#2563EB");
+      }
+      const label = activeBtn.querySelectorAll("span")[1];
+      if (label) {
+        label.classList.remove("font-medium");
+        label.classList.add("font-semibold");
+      }
+    }
+    syncSectionUrl(name);
+  }
+  document.querySelectorAll("input[type=text],input[type=email],input[type=url],input[type=number],input[type=date],textarea,select").forEach(el => {
+    if (!el.classList.contains("input-field") && !el.closest(".app-row select")) el.classList.add("input-field");
+  });
+  attachPreserveSectionToForms();
+  const urlParams = new URLSearchParams(window.location.search);
+  const sec = urlParams.get("section") || "{{ active_section|default:'' }}";
+  const hash = window.location.hash.replace("#","");
+  if (sec && SECTIONS.includes(sec)) {
+    showSection(sec);
+  } else if (SECTIONS.includes(hash)) {
+    showSection(hash);
+  }
+
+  // ── Мобильное меню ────────────────────────────────────────────────────────
+
+  function toggleMobileMenu() {
+    const menu = document.getElementById("mobile-menu");
+    const opening = menu.classList.contains("hidden");
+    menu.classList.toggle("hidden", !opening);
+    document.body.style.overflow = opening ? "hidden" : "";
+  }
+
+  function closeMobileMenu() {
+    const menu = document.getElementById("mobile-menu");
+    if (!menu.classList.contains("hidden")) {
+      menu.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+  }
+
+  // Выбор раздела из мобильного меню: переключаем секцию, закрываем меню, скроллим
+  function mobileNav(name) {
+    showSection(name);
+    toggleMobileMenu();
+    setTimeout(() => {
+      const el = document.getElementById("section-" + name);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }
+
+  // Подсветка активного пункта в мобильном меню
+  function syncMobileActive(name) {
+    document.querySelectorAll(".mobile-nav-item").forEach(btn => {
+      const active = btn.id === "mnav-" + name;
+      // Фон строки
+      btn.classList.toggle("bg-blue-50/60",   active);
+      btn.classList.toggle("hover:bg-slate-50", !active);
+      // Иконка-круг (первый <span>)
+      const iconWrap = btn.querySelector("span:first-of-type");
+      if (iconWrap) {
+        iconWrap.classList.toggle("bg-blue-100",  active);
+        iconWrap.classList.toggle("bg-slate-100", !active);
+        const svg = iconWrap.querySelector("svg");
+        if (svg) svg.setAttribute("stroke", active ? "#2563EB" : "#475569");
+      }
+      // Текст (второй <span>)
+      const label = btn.querySelectorAll("span")[1];
+      if (label) {
+        label.classList.toggle("text-[#2563EB]", active);
+        label.classList.toggle("font-semibold",  active);
+        label.classList.toggle("text-[#334155]", !active);
+        label.classList.toggle("font-medium",    !active);
+      }
+      // Стрелка (последний svg)
+      const svgs = btn.querySelectorAll("svg");
+      const arrow = svgs[svgs.length - 1];
+      if (arrow) {
+        arrow.classList.toggle("text-[#2563EB]", active);
+        arrow.classList.toggle("text-slate-300", !active);
+      }
+    });
+  }
+
+  // Оборачиваем showSection для синхронизации мобильного меню
+  const _origShowSection = showSection;
+  window.showSection = function(name) {
+    _origShowSection(name);
+    syncMobileActive(name);
+    // Синхронизируем нижнюю навигацию
+    syncBottomNav(name);
+  };
+
+  // ── Нижняя навигация (мобильная) ──────────────────────────────────────────
+  function syncBottomNav(name) {
+    document.querySelectorAll(".bottom-nav-btn").forEach(btn => {
+      const isActive = btn.dataset.section === name;
+      const iconWrap = btn.querySelector(".bnav-icon");
+      const label = btn.querySelector(".bnav-label");
+      if (iconWrap) {
+        iconWrap.classList.toggle("text-[#2563EB]", isActive);
+        iconWrap.classList.toggle("text-slate-400", !isActive);
+      }
+      if (label) {
+        label.classList.toggle("text-[#2563EB]", isActive);
+        label.classList.toggle("font-semibold", isActive);
+        label.classList.toggle("text-slate-400", !isActive);
+        label.classList.toggle("font-medium", !isActive);
+      }
+    });
+  }
+
+</script>
+
+<!-- ════════════════════════════════════════════════════════════
+     МОБИЛЬНАЯ НИЖНЯЯ НАВИГАЦИЯ (< lg) — 4 основных + «Ещё»
+════════════════════════════════════════════════════════════ -->
+<nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] flex items-stretch h-16 safe-area-inset-bottom">
+
+  <!-- Профиль компании -->
+  <button data-section="profile" onclick="showSection('profile');closeMobileMenu()"
+          class="bottom-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors active:bg-slate-50">
+    <span class="bnav-icon text-[#2563EB]">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+        <path d="M10 6h4"/><path d="M10 10h4"/>
+      </svg>
+    </span>
+    <span class="bnav-label text-[10px] font-semibold text-[#2563EB] leading-none">Профиль</span>
+  </button>
+
+  <!-- Мои объявления -->
+  <button data-section="vacancies" onclick="showSection('vacancies');closeMobileMenu()"
+          class="bottom-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors active:bg-slate-50">
+    <span class="bnav-icon text-slate-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+        <path d="M12 11h4"/><path d="M8 11h.01"/>
+      </svg>
+    </span>
+    <span class="bnav-label text-[10px] font-medium text-slate-400 leading-none">Объявления</span>
+  </button>
+
+  <!-- Отклики -->
+  <button data-section="applications" onclick="showSection('applications');closeMobileMenu()"
+          class="bottom-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors active:bg-slate-50">
+    <span class="bnav-icon text-slate-400 relative">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <polyline points="16 11 18 13 22 9"/>
+      </svg>
+      {% if total_apps %}<span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#2563EB] text-white text-[9px] font-bold flex items-center justify-center leading-none">{{ total_apps }}</span>{% endif %}
+    </span>
+    <span class="bnav-label text-[10px] font-medium text-slate-400 leading-none">Отклики</span>
+  </button>
+
+  <!-- Новое объявление -->
+  <button data-section="new_opp" onclick="showSection('new_opp');closeMobileMenu()"
+          class="bottom-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors active:bg-slate-50">
+    <span class="bnav-icon text-slate-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>
+      </svg>
+    </span>
+    <span class="bnav-label text-[10px] font-medium text-slate-400 leading-none">Создать</span>
+  </button>
+
+  <!-- Ещё (открывает мобильное меню со всеми пунктами) -->
+  <button onclick="toggleMobileMenu()"
+          class="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors active:bg-slate-50">
+    <span class="text-slate-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+      </svg>
+    </span>
+    <span class="text-[10px] font-medium text-slate-400 leading-none">Ещё</span>
+  </button>
+
+</nav>
+
+<!-- Отступ снизу для контента под нижней навигацией на мобильных -->
+<div class="lg:hidden h-16"></div>
+
+</body>
+</html>

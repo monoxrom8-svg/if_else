@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  {% include "tramplin/_favicon.html" %}
+  <title>Редактировать вакансию — Трамплин</title>
+  {% load static %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <link rel="stylesheet" href="{% static 'tramplin/leaflet-fix.css' %}"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="{% static 'tramplin/leaflet-tiles.js' %}"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    body{background:#F8FAFC;}
+
+    .input-field{
+      width:100%;
+      padding:.625rem 1rem;
+      border:1.5px solid #E2E8F0;
+      border-radius:10px;
+      font-size:.9rem;
+      color:#1E293B;
+      background:#FFFFFF;
+      transition:border-color .2s, box-shadow .2s, background .2s;
+      outline:none;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    }
+    .input-field:hover{
+      border-color:#CBD5E1;
+      background:#FAFCFF;
+    }
+    .input-field:focus{
+      border-color:#6366F1;
+      box-shadow:0 0 0 3.5px rgba(99,102,241,0.15), 0 1px 4px rgba(99,102,241,0.1);
+      background:#FFFFFF;
+    }
+    .input-field::placeholder{color:#94A3B8;}
+    textarea.input-field{resize:vertical;}
+    select.input-field{cursor:pointer;}
+    select.input-field option{background:#FFFFFF;color:#1E293B;}
+
+    .label{
+      display:block;
+      font-size:.72rem;
+      font-weight:600;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#64748B;
+      margin-bottom:.4rem;
+    }
+
+    /* Обводка карты в том же стиле */
+    #pickerMap{
+      border:1.5px solid #E2E8F0 !important;
+      border-radius:10px !important;
+      box-shadow:0 1px 3px rgba(0,0,0,0.04);
+      transition:border-color .2s, box-shadow .2s;
+    }
+    #pickerMap:hover{
+      border-color:#CBD5E1 !important;
+    }
+  </style>
+</head>
+<body class="text-[#334155]">
+{% include "tramplin/_navbar.html" %}
+<div class="max-w-2xl mx-auto px-6 py-10">
+  <a href="{% url 'tramplin:employer_dashboard' %}?section=vacancies" class="inline-flex items-center gap-1 text-sm mb-6 transition-opacity hover:opacity-70 text-[#475569]">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Назад к вакансиям
+  </a>
+  <div class="rounded-xl p-8 bg-white border border-[#E2E8F0] shadow-sm">
+    <h1 class="text-xl font-semibold mb-6 text-[#1E293B]">Редактировать: {{ opp.title }}</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for field in form %}
+        <div {% if field.name == 'description' or field.name == 'requirements' or field.name == 'skills_required' %}class="md:col-span-2"{% endif %}>
+          <label class="label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        {% if opp.latitude and opp.longitude %}
+        {% include "tramplin/_map_location_picker.html" with picker_prefix="opp" init_lat=opp.latitude init_lng=opp.longitude has_marker=True location_input_id="id_location" postal_input_id="id_postal_code" %}
+        {% else %}
+        {% include "tramplin/_map_location_picker.html" with picker_prefix="opp" has_marker=False location_input_id="id_location" postal_input_id="id_postal_code" %}
+        {% endif %}
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm">Сохранить</button>
+        <a href="{% url 'tramplin:employer_dashboard' %}?section=vacancies" class="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0] hover:bg-[#E2E8F0]">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('input[type=text],input[type=email],input[type=url],input[type=date],textarea,select').forEach(el => {
+    el.classList.add('input-field');
+  });
+
+
+</script>
+</body>
+</html>
