@@ -25,4 +25,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
 # Railway sets PORT (often 8080); local/Docker Compose can use 8000.
-CMD ["sh", "-c", "python manage.py migrate --noinput && exec python manage.py runserver 0.0.0.0:${PORT:-8000}"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && exec python manage.py runserver 0.0.0.0:${PORT:-8000}"]
