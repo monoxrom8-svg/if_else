@@ -46,8 +46,12 @@
     .toggle-thumb{width:18px;height:18px;border-radius:50%;background:#94A3B8;position:absolute;top:2px;left:2px;transition:transform .25s;}
     .toggle-track.on .toggle-thumb{transform:translateX(20px);background:#2563EB;}
     .networking-badge{background:#EFF6FF;color:#2563EB;font-size:.6875rem;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;border:1px solid #BFDBFE;}
-    .opp-mini{border:1px solid #E2E8F0;border-radius:10px;padding:1rem;background:#FFFFFF;transition:border-color .2s,transform .2s;}
+    .opp-mini{border:1px solid #E2E8F0;border-radius:10px;padding:1rem;background:#FFFFFF;transition:border-color .2s,transform .2s;position:relative;}
     .opp-mini:hover{border-color:#2563EB;transform:translateY(-2px);}
+    .opp-mini-remove{position:absolute;top:.75rem;right:.75rem;width:2rem;height:2rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;color:#94A3B8;background:#F8FAFC;border:1px solid #E2E8F0;cursor:pointer;transition:all .15s;}
+    .opp-mini-remove:hover{color:#DC2626;background:#FEF2F2;border-color:#FECACA;}
+    .opp-mini-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:.5rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid #E2E8F0;}
+    .opp-mini-actions .btn{justify-content:center;width:100%;white-space:nowrap;font-size:.75rem;padding:.4rem .5rem;}
     .contact-card{border:1px solid #E2E8F0;border-radius:10px;padding:1rem;background:#FFFFFF;display:flex;align-items:center;gap:.875rem;transition:border-color .2s;}
     .contact-card:hover{border-color:#CBD5E1;}
     .inbox-item{border:1px solid #E2E8F0;border-radius:10px;padding:.875rem 1rem;background:#FFFFFF;transition:border-color .2s;}
@@ -276,7 +280,10 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             {% for opp in favorites %}
             <div class="opp-mini" id="fav-card-{{ opp.pk }}">
-              <div class="flex items-start gap-3">
+              <button type="button" onclick="removeFavorite({{ opp.pk }})" class="opp-mini-remove" title="Убрать из избранного" aria-label="Убрать из избранного">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+              <div class="flex items-start gap-3 pr-8">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB]">{{ opp.employer.company_name|first|upper|default:"?" }}</div>
                 <div class="flex-1 min-w-0">
                   <div class="font-semibold text-[#1E293B] text-sm truncate">{{ opp.title }}</div>
@@ -286,7 +293,7 @@
                   </div>
                 </div>
               </div>
-              <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-[#E2E8F0]">
+              <div class="opp-mini-actions">
                 <a href="{% url 'tramplin:opportunity_detail' opp.pk %}" class="btn btn-ghost btn-sm">Открыть</a>
                 {% if opp.pk in applied_ids %}
                 <span class="btn btn-ghost btn-sm opacity-60 cursor-not-allowed">Отклик отправлен</span>
@@ -296,10 +303,6 @@
                 {% if my_contacts %}
                 <button type="button" onclick="openRecommendModal({{ opp.pk }}, '{{ opp.title|escapejs }}', '{{ opp.employer.company_name|default:opp.employer.display_name|escapejs }}')" class="btn btn-ghost btn-sm">Рекомендовать</button>
                 {% endif %}
-                <button type="button" onclick="removeFavorite({{ opp.pk }})" class="btn btn-danger btn-sm ml-auto flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                  Убрать
-                </button>
               </div>
             </div>
             {% endfor %}
