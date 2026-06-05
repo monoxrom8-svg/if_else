@@ -42,6 +42,22 @@ def _seeker_profile_completeness(user) -> int:
     return int(sum(checks) / len(checks) * 100)
 
 
+def _save_avatar_upload(request, avatar_form, redirect_response):
+    if avatar_form.is_valid():
+        try:
+            avatar_form.save()
+            messages.success(request, "Фото профиля обновлено.")
+        except Exception:
+            messages.error(
+                request,
+                "Не удалось загрузить фото. Проверьте ключи Cloudinary на сервере и попробуйте снова.",
+            )
+    else:
+        for err in avatar_form.errors.get("avatar", []):
+            messages.error(request, err)
+    return redirect_response
+
+
 def _user_display_label(user) -> str:
     return user.display_name or user.email or user.username
 
@@ -678,13 +694,11 @@ def employer_dashboard(request):
                 return _redirect_employer(request, "profile")
         elif action == "upload_avatar":
             avatar_form = AvatarUploadForm(request.POST, request.FILES, instance=user)
-            if avatar_form.is_valid():
-                avatar_form.save()
-                messages.success(request, "Фото профиля обновлено.")
-            else:
-                for err in avatar_form.errors.get("avatar", []):
-                    messages.error(request, err)
-            return _redirect_employer(request, "profile")
+            return _save_avatar_upload(
+                request,
+                avatar_form,
+                _redirect_employer(request, "profile"),
+            )
         elif action == "delete_avatar":
             if user.avatar:
                 user.avatar.delete(save=False)
@@ -818,13 +832,11 @@ def seeker_dashboard(request):
 
         elif action == "upload_avatar":
             avatar_form = AvatarUploadForm(request.POST, request.FILES, instance=user)
-            if avatar_form.is_valid():
-                avatar_form.save()
-                messages.success(request, "Фото профиля обновлено.")
-            else:
-                for err in avatar_form.errors.get("avatar", []):
-                    messages.error(request, err)
-            return _redirect_seeker(request, "profile")
+            return _save_avatar_upload(
+                request,
+                avatar_form,
+                _redirect_seeker(request, "profile"),
+            )
 
         elif action == "delete_avatar":
             if user.avatar:
@@ -1908,13 +1920,11 @@ def curator_dashboard(request):
                 return redirect("tramplin:curator_dashboard")
         elif action == "upload_avatar":
             avatar_form = AvatarUploadForm(request.POST, request.FILES, instance=user)
-            if avatar_form.is_valid():
-                avatar_form.save()
-                messages.success(request, "Фото профиля обновлено.")
-            else:
-                for err in avatar_form.errors.get("avatar", []):
-                    messages.error(request, err)
-            return redirect("tramplin:curator_dashboard")
+            return _save_avatar_upload(
+                request,
+                avatar_form,
+                redirect("tramplin:curator_dashboard"),
+            )
         elif action == "delete_avatar":
             if user.avatar:
                 user.avatar.delete(save=False)

@@ -1,11 +1,26 @@
 import json
 import re
+import uuid
+
 import requests
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
+
+
+def user_avatar_upload_to(instance, filename):
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "jpg"
+    if ext not in {"jpg", "jpeg", "png", "webp", "gif"}:
+        ext = "jpg"
+    return f"avatars/{uuid.uuid4().hex}.{ext}"
+
+
+def chat_attachment_upload_to(instance, filename):
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "bin"
+    return f"chat_attachments/{timezone.now():%Y/%m}/{uuid.uuid4().hex}.{ext}"
 
 
 def _geocode_ru_postal_zippopotam(postal_code):
@@ -233,7 +248,7 @@ class User(AbstractUser):
     # Avatar
     avatar = models.FileField(
         "Фото профиля",
-        upload_to="avatars/",
+        upload_to=user_avatar_upload_to,
         blank=True,
         null=True,
     )
@@ -545,7 +560,10 @@ class Message(models.Model):
     )
     text = models.TextField("Текст", blank=True)
     file_attachment = models.FileField(
-        "Вложение", upload_to="chat_attachments/%Y/%m/", blank=True, null=True
+        "Вложение",
+        upload_to=chat_attachment_upload_to,
+        blank=True,
+        null=True,
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
