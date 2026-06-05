@@ -94,7 +94,7 @@ class EmployerProfileForm(forms.ModelForm):
                   "company_industry", "company_website", "company_video_url",
                   "professional_network_url")
         widgets = {
-            "display_name": forms.TextInput(attrs={"placeholder": "Контактное лицо"}),
+            "display_name": forms.TextInput(attrs={"placeholder": "Как отображается в чате и кабинете"}),
             "company_name": forms.TextInput(attrs={"placeholder": "ООО Ромашка"}),
             "company_description": forms.Textarea(attrs={"rows": 3, "placeholder": "Краткое описание компании..."}),
             "company_industry": forms.TextInput(attrs={"placeholder": "Финтех, EdTech, DevTools..."}),
@@ -103,7 +103,7 @@ class EmployerProfileForm(forms.ModelForm):
             "professional_network_url": forms.URLInput(attrs={"placeholder": "https://linkedin.com/company/..."}),
         }
         labels = {
-            "display_name": "Контактное лицо",
+            "display_name": "Ваше имя",
             "company_name": "Название компании",
             "company_description": "Описание",
             "company_industry": "Отрасль",
@@ -230,6 +230,29 @@ class OpportunitySubmissionForm(forms.ModelForm):
         cleaned = super().clean()
         _validate_map_location(self.data, cleaned)
         return cleaned
+
+
+class CompanyContactPersonForm(forms.ModelForm):
+    class Meta:
+        model = CompanyProfile
+        fields = (
+            "contact_person_name",
+            "contact_person_position",
+            "contact_person_email",
+            "contact_person_phone",
+        )
+        widgets = {
+            "contact_person_name": forms.TextInput(attrs={"placeholder": "Анна Иванова", "class": "input-field"}),
+            "contact_person_position": forms.TextInput(attrs={"placeholder": "HR-менеджер, рекрутер...", "class": "input-field"}),
+            "contact_person_email": forms.EmailInput(attrs={"placeholder": "hr@company.ru", "class": "input-field"}),
+            "contact_person_phone": forms.TextInput(attrs={"placeholder": "+7 (999) 123-45-67", "class": "input-field"}),
+        }
+        labels = {
+            "contact_person_name": "ФИО",
+            "contact_person_position": "Должность",
+            "contact_person_email": "Email",
+            "contact_person_phone": "Телефон",
+        }
 
 
 class CompanyProfileForm(forms.ModelForm):

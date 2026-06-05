@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.db.models import F
 from .forms import (
     RegistrationForm, LoginForm, EmployerProfileForm, SeekerProfileForm,
-    OpportunityForm, CompanyProfileForm,
+    OpportunityForm, CompanyProfileForm, CompanyContactPersonForm,
     CompanyReviewForm, AvatarUploadForm, CuratorProfileForm,
 )
 from .models import (
@@ -128,6 +128,7 @@ def _redirect_employer(request, default_section="profile"):
     action_sections = {
         "save_profile": "profile",
         "save_company_profile": "profile",
+        "save_contact_person": "profile",
         "upload_avatar": "profile",
         "delete_avatar": "profile",
         "create_opportunity": "vacancies",
@@ -691,6 +692,7 @@ def employer_dashboard(request):
     opp_form = OpportunityForm()
     company_profile_obj, _ = CompanyProfile.objects.get_or_create(employer=user)
     company_profile_form = CompanyProfileForm(instance=company_profile_obj)
+    contact_person_form = CompanyContactPersonForm(instance=company_profile_obj)
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -719,6 +721,12 @@ def employer_dashboard(request):
             if company_profile_form.is_valid():
                 company_profile_form.save()
                 messages.success(request, "Страница компании обновлена.")
+                return _redirect_employer(request, "profile")
+        elif action == "save_contact_person":
+            contact_person_form = CompanyContactPersonForm(request.POST, instance=company_profile_obj)
+            if contact_person_form.is_valid():
+                contact_person_form.save()
+                messages.success(request, "Данные контактного лица сохранены.")
                 return _redirect_employer(request, "profile")
         elif action == "create_opportunity":
             # Только верифицированные работодатели могут создавать объявления
@@ -769,6 +777,7 @@ def employer_dashboard(request):
         "profile_form": profile_form,
         "opp_form": opp_form,
         "company_profile_form": company_profile_form,
+        "contact_person_form": contact_person_form,
         "active_opps": active_opps,
         "closed_opps": closed_opps,
         "planned_opps": planned_opps,

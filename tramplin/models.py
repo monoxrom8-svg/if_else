@@ -510,9 +510,23 @@ class CompanyProfile(models.Model):
     office_longitude = models.FloatField("Долгота офиса", null=True, blank=True)
     founded_year = models.CharField("Год основания", max_length=10, blank=True)
     team_size = models.CharField("Размер команды", max_length=50, blank=True)
+    # Контактное лицо для соискателей (отображается на странице компании)
+    contact_person_name = models.CharField("Имя контактного лица", max_length=150, blank=True)
+    contact_person_position = models.CharField("Должность", max_length=150, blank=True)
+    contact_person_email = models.EmailField("Email контактного лица", blank=True)
+    contact_person_phone = models.CharField("Телефон", max_length=30, blank=True)
 
     def __str__(self):
         return f"Профиль компании: {self.employer.company_name or self.employer.display_name}"
+
+    @property
+    def has_contact_person(self):
+        return any([
+            self.contact_person_name,
+            self.contact_person_position,
+            self.contact_person_email,
+            self.contact_person_phone,
+        ])
 
     @property
     def tech_stack(self):

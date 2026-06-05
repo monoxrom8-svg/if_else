@@ -447,6 +447,24 @@
           <div class="mt-5"><button type="submit" class="btn btn-primary">Сохранить профиль</button></div>
         </form>
       </div>
+
+      <div class="card mt-5">
+        <h2 class="section-title">Контактное лицо</h2>
+        <p class="text-sm text-[#94A3B8] mb-5">Эти данные будут видны соискателям на странице вашей компании</p>
+        <form method="post">
+          {% csrf_token %}<input type="hidden" name="action" value="save_contact_person"/>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in contact_person_form %}
+            <div>
+              <label class="label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="mt-5"><button type="submit" class="btn btn-primary">Сохранить контактное лицо</button></div>
+        </form>
+      </div>
       {% include "tramplin/_delete_account_card.html" %}
     </div>
 
@@ -647,6 +665,15 @@
               {% if seeker.skills_list|length > 5 %}<span class="text-xs text-[#94A3B8]">+{{ seeker.skills_list|length|add:"-5" }}</span>{% endif %}
             </div>
             {% endif %}
+          </div>
+          <div class="flex flex-wrap items-center gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto">
+            <a href="{% url 'tramplin:public_profile' seeker.pk %}" class="btn btn-ghost btn-sm">Профиль</a>
+            <button type="button"
+                    onclick="openChatWith({{ seeker.pk }}, '{{ seeker.display_name|default:seeker.username|escapejs }}', '{{ seeker.display_name|first|upper|default:"?" }}', false, '{{ seeker.skills|escapejs }}', '{{ seeker.avatar_url|escapejs }}')"
+                    class="btn btn-primary btn-sm inline-flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Написать
+            </button>
           </div>
         </div>
         {% endwith %}
