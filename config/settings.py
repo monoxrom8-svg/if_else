@@ -45,15 +45,9 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-]
-if CLOUDINARY_CONFIGURED:
-    INSTALLED_APPS.append("cloudinary_storage")
-INSTALLED_APPS += [
     "django.contrib.staticfiles",
+    "tramplin.apps.TramplinConfig",
 ]
-if CLOUDINARY_CONFIGURED:
-    INSTALLED_APPS.append("cloudinary")
-INSTALLED_APPS.append("tramplin.apps.TramplinConfig")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -124,12 +118,6 @@ if CLOUDINARY_CONFIGURED:
     STORAGES["default"] = {
         "BACKEND": "tramplin.storage.HybridCloudinaryStorage",
     }
-    if all((CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)):
-        CLOUDINARY_STORAGE = {
-            "CLOUD_NAME": CLOUDINARY_CLOUD_NAME,
-            "API_KEY": CLOUDINARY_API_KEY,
-            "API_SECRET": CLOUDINARY_API_SECRET,
-        }
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
