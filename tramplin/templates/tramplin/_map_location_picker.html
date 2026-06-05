@@ -50,7 +50,9 @@
     </span>
   </div>
 
-  <div id="{{ picker_prefix }}_map" style="height:280px;border-radius:10px;border:1px solid #E2E8F0;overflow:hidden;background:#E2E8F0;"></div>
+  <div class="map-picker-shell relative">
+    <div id="{{ picker_prefix }}_map" style="height:280px;border-radius:10px;border:1px solid #E2E8F0;overflow:hidden;background:#E2E8F0;"></div>
+  </div>
 </div>
 
 <script>
@@ -167,10 +169,10 @@
       if (!mapBlockVisible()) return;
       const mapEl = document.getElementById(PREFIX + "_map");
       if (!mapEl) return;
-      map = L.map(mapEl, { scrollWheelZoom: true }).setView(
+      map = L.map(mapEl, { scrollWheelZoom: true, attributionControl: false }).setView(
         [initLat, initLng], hasM ? 14 : 10
       );
-      if (window.TRAMPLIN_addTileLayer) TRAMPLIN_addTileLayer(map);
+      if (window.TRAMPLIN_addTileLayer) TRAMPLIN_addTileLayer(map, { hideAttribution: true });
       else console.warn("TRAMPLIN_addTileLayer не найден — проверьте leaflet-tiles.js");
       map.on("click", function(e) {
         placeMarker(e.latlng.lat, e.latlng.lng, true);

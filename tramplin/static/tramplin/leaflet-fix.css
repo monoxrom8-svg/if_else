@@ -9,3 +9,8 @@
   background: #e2e8f0;
   z-index: 0;
 }
+
+/* Блок выбора точки (создание/редактирование объявления) — без подписи Leaflet/OSM */
+.map-picker-shell .leaflet-control-attribution {
+  display: none !important;
+}
