@@ -3,8 +3,8 @@
    Defaults: size="h-10 w-10", rounded="rounded-full"
 #}
 {% with sz=size|default:"h-10 w-10" rd=rounded|default:"rounded-full" %}
-{% if user_obj.avatar %}
-<img src="{{ user_obj.avatar.url }}"
+{% if user_obj.avatar_url %}
+<img src="{{ user_obj.avatar_url }}"
      alt="{{ user_obj.display_name|default:user_obj.username }}"
      class="{{ sz }} {{ rd }} object-cover flex-shrink-0"
      style="border:1.5px solid #E2E8F0;">

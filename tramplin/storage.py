@@ -3,6 +3,7 @@ import os
 import cloudinary
 import cloudinary.api
 import cloudinary.uploader
+from cloudinary.exceptions import Error as CloudinaryError
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage, Storage
 from django.utils.deconstruct import deconstructible
@@ -91,10 +92,10 @@ class HybridCloudinaryStorage(Storage):
 
     def url(self, name):
         name = _public_id(name)
-        if getattr(settings, "CLOUDINARY_CONFIGURED", False):
-            return _cloudinary_delivery_url(name)
         if self._local_path(name).exists():
             return self._local.url(name)
+        if getattr(settings, "CLOUDINARY_CONFIGURED", False):
+            return _cloudinary_delivery_url(name)
         return self._local.url(name)
 
     def delete(self, name):
@@ -125,14 +126,23 @@ class HybridCloudinaryStorage(Storage):
         _configure_cloudinary()
         content.seek(0)
         public_id = _cloud_id(name)
-        result = cloudinary.uploader.upload(
-            content,
-            public_id=public_id,
-            resource_type=_resource_type(name),
-            overwrite=True,
-            use_filename=False,
-        )
+        try:
+            result = cloudinary.uploader.upload(
+                content,
+                public_id=public_id,
+                resource_type=_resource_type(name),
+                overwrite=True,
+                use_filename=False,
+            )
+        except CloudinaryError as exc:
+            if settings.DEBUG:
+                return self._local.save(name, content, max_length=max_length)
+            raise OSError(str(exc)) from exc
+
         if not result.get("secure_url"):
+            if settings.DEBUG:
+                content.seek(0)
+                return self._local.save(name, content, max_length=max_length)
             raise OSError("Не удалось загрузить файл в Cloudinary.")
 
         stored_id = result.get("public_id", public_id)

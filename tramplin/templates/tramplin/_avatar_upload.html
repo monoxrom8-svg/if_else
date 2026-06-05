@@ -6,8 +6,8 @@
          style="background:#EFF6FF;border:2px solid #BFDBFE;"
          onclick="document.getElementById('avatar-file-input').click()"
          title="Нажмите, чтобы загрузить фото">
-      {% if user.avatar %}
-      <img id="avatar-preview-img" src="{{ user.avatar.url }}"
+      {% if user.avatar_url %}
+      <img id="avatar-preview-img" src="{{ user.avatar_url }}"
            alt="Фото профиля"
            class="w-20 h-20 object-cover">
       {% else %}
@@ -50,7 +50,7 @@
       Загрузить фото
     </button>
 
-    {% if user.avatar %}
+    {% if user.avatar_url %}
     <form method="post" action="{{ form_action }}">
       {% csrf_token %}
       <input type="hidden" name="action" value="delete_avatar">

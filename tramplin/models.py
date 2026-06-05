@@ -259,8 +259,17 @@ class User(AbstractUser):
     @property
     def avatar_url(self):
         """Returns avatar URL or empty string (templates use |default filter)."""
-        if self.avatar:
-            return self.avatar.url
+        if not self.avatar:
+            return ""
+        try:
+            url = self.avatar.url
+        except Exception:
+            return ""
+        if url.startswith("http"):
+            return url
+        from django.core.files.storage import default_storage
+        if default_storage.exists(self.avatar.name):
+            return url
         return ""
 
     @property

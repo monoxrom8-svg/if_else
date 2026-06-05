@@ -38,6 +38,8 @@ CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "").strip()
 CLOUDINARY_CONFIGURED = bool(_cloudinary_url) or all(
     (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)
 )
+# На Railway надёжнее одна переменная CLOUDINARY_URL из Cloudinary Console:
+# cloudinary://API_KEY:API_SECRET@CLOUDINARY_CLOUD_NAME
 
 INSTALLED_APPS = [
     "django.contrib.admin",

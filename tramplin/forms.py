@@ -307,13 +307,6 @@ class AvatarUploadForm(forms.ModelForm):
                 raise forms.ValidationError("Размер файла не должен превышать 2 МБ.")
         return avatar
 
-    def save(self, commit=True):
-        user = self.instance
-        new_avatar = self.cleaned_data.get("avatar")
-        if new_avatar and user.avatar:
-            user.avatar.delete(save=False)
-        return super().save(commit=commit)
-
 
 class CuratorProfileForm(forms.ModelForm):
     """Форма редактирования профиля куратора/администратора."""

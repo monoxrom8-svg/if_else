@@ -47,11 +47,19 @@ def _save_avatar_upload(request, avatar_form, redirect_response):
         try:
             avatar_form.save()
             messages.success(request, "Фото профиля обновлено.")
-        except Exception:
-            messages.error(
-                request,
-                "Не удалось загрузить фото. Проверьте ключи Cloudinary на сервере и попробуйте снова.",
-            )
+        except Exception as exc:
+            detail = str(exc)
+            if "Invalid Signature" in detail:
+                messages.error(
+                    request,
+                    "Неверный CLOUDINARY_API_SECRET на сервере. "
+                    "Скопируйте секрет из Cloudinary Console → API Keys → Reveal (Root-ключ).",
+                )
+            else:
+                messages.error(
+                    request,
+                    "Не удалось загрузить фото. Проверьте настройки Cloudinary и попробуйте снова.",
+                )
     else:
         for err in avatar_form.errors.get("avatar", []):
             messages.error(request, err)
